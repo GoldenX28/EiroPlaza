@@ -1,0 +1,88 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #83a4d4, #b6fbff);
+    min-height: 100vh;
+    margin: 0;
+  }
+  
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1e3a8a;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  nav button {
+    background: none;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border-radius: 8px;
+  }
+  
+  nav button:hover {
+    background-color: #2563eb;
+  }
+  
+  .main-content {
+    margin-top: 6rem;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #1e3a8a;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  
+  .autocomplete-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: white;
+    border: 1px solid #1e3a8a;
+    border-radius: 8px;
+    position: absolute;
+    width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+  
+  .autocomplete-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .autocomplete-item:hover {
+    background-color: #e0f2fe;
+  }
+  
+  .search-button {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(to right, #2563eb, #1e40af);
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .search-button:hover {
+    background: linear-gradient(to right, #1e40af, #1e3a8a);
+  }

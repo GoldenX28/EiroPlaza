@@ -25,6 +25,7 @@ import axios from 'axios';
 
 export default {
   name: 'CountryDetails',
+  props: ['id'],
   data() {
     return {
       country: null,
@@ -33,15 +34,18 @@ export default {
     }
   },
   async created() {
+    if (!this.id) {
+      this.error = 'No country ID provided';
+      this.loading = false;
+      return;
+    }
+
     try {
-      console.log('Fetching country with ID:', this.$route.params.id);
-      const response = await axios.get(`http://localhost:3000/api/countries/${this.$route.params.id}`);
-      console.log('Response:', response);
+      const response = await axios.get(`http://localhost:3000/api/countries/${this.id}`);
       this.country = response.data;
     } catch (error) {
       console.error('Error fetching country details:', error);
-      console.error('Error response:', error.response);
-      this.error = `Failed to fetch country details: ${error.message}`;
+      this.error = 'Failed to fetch country details. Please try again later.';
     } finally {
       this.loading = false;
     }

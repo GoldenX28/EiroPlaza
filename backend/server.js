@@ -38,6 +38,12 @@ app.get('/api/countries', async (req, res) => {
 // Get one country
 app.get('/api/countries/:id', async (req, res) => {
   console.log(`Fetching country with id: ${req.params.id}`);
+  
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    console.log('Invalid ID format');
+    return res.status(400).json({ message: 'Invalid country ID format' });
+  }
+
   try {
     const country = await Country.findById(req.params.id);
     console.log('Found country:', country);
@@ -48,7 +54,7 @@ app.get('/api/countries/:id', async (req, res) => {
     res.json(country);
   } catch (err) {
     console.error('Error fetching country:', err);
-    res.status(500).json({ message: 'Error fetching country', error: err.message, stack: err.stack });
+    res.status(500).json({ message: 'Error fetching country', error: err.message });
   }
 });
 

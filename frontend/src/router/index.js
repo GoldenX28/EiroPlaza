@@ -13,7 +13,8 @@ const routes = [
   {
     path: '/country/:id',
     name: 'CountryDetails',
-    component: CountryDetails
+    component: CountryDetails,
+    props: true // Add this line
   },
   {
     path: '/about',

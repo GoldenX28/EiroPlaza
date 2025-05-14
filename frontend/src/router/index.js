@@ -3,6 +3,8 @@ import HomePage from '../components/HomePage.vue'
 import CountryDetails from '../components/CountryDetails.vue'
 import AboutPage from '@/components/AboutPage.vue'
 import ContactPage from '@/components/ContactPage.vue'
+import RegisterForm from '@/components/Register.vue'  // Import the RegisterForm component
+import LoginForm from '@/components/Login.vue'  // Assuming you have a LoginForm component
 
 const routes = [
   {
@@ -14,7 +16,7 @@ const routes = [
     path: '/country/:id',
     name: 'CountryDetails',
     component: CountryDetails,
-    props: true // Add this line
+    props: true
   },
   {
     path: '/about',
@@ -25,6 +27,16 @@ const routes = [
     path: '/contact',
     name: 'Contact',
     component: ContactPage
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: RegisterForm  // Use RegisterForm here
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginForm
   }
 ]
 

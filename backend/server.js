@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import Country from './models/Country.js';
+import authRoutes from './routes/auth.js';
 
 dotenv.config();
 
@@ -20,6 +21,9 @@ mongoose.connect(process.env.MONGODB_URI)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
+
+// Use auth routes
+app.use('/api/auth', authRoutes);
 
 // Routes
 

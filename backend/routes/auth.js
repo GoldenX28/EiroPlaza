@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Create new user (password will be hashed by the pre-save hook)
+    // Create new user
     const user = new User({
       username,
       email,
@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    res.status(500).json({ message: 'Server error during registration', error: error.message });
   }
 });
 
@@ -38,10 +38,10 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       console.log('User not found');
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     console.log('User found, comparing passwords');
@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
 
     let isMatch;
     try {
-      isMatch = await user.correctPassword(password, user.password);
+      isMatch = await bcrypt.compare(password, user.password);
       console.log('Password match result:', isMatch);
     } catch (error) {
       console.error('Error during password comparison:', error);
@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
 
     if (!isMatch) {
       console.log('Password does not match');
-      return res.status(401).json({ message: 'Incorrect password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     console.log('Password matches, generating token');
@@ -69,7 +69,7 @@ router.post('/login', async (req, res) => {
     res.json({ token });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login', error: error.message, stack: error.stack });
+    res.status(500).json({ message: 'Server error during login', error: error.message });
   }
 });
 

@@ -5,59 +5,71 @@
       <p>{{ error }}</p>
       <button @click="goBack" class="mt-4 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-500">Go Back</button>
     </div>
-    <div v-else-if="country" class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
-      <div class="md:flex">
-        <div class="p-8 w-full">
-          <h2 class="text-2xl font-bold mb-2">{{ country.name }}</h2>
-          <p><strong>Capital:</strong> {{ country.capital }}</p>
-          <p><strong>Population:</strong> {{ country.population }}</p>
-          <p><strong>Languages:</strong> {{ country.languages.join(', ') }}</p>
-          <p><strong>Timezone:</strong> {{ country.timezone }}</p>
-          <button @click="goBack" class="mt-4 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-500">Go Back</button>
-        </div>
-      </div>
+    <div v-else-if="country" class="country-details max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+      <h2 class="text-2xl font-bold mb-2">{{ country.name }}</h2>
+      <p><strong>Capital:</strong> {{ country.capital }}</p>
+      <p><strong>Population:</strong> {{ country.population }}</p>
+      <p><strong>Languages:</strong> {{ country.languages.join(', ') }}</p>
+      <p><strong>Timezone:</strong> {{ country.timezone }}</p>
+      <button @click="goBack" class="mt-4 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-500">Back to Search</button>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import { useRoute, useRouter } from 'vue-router';
 
 export default {
   name: 'CountryDetails',
-  props: ['id'],
-  data() {
-    return {
-      country: null,
-      loading: true,
-      error: null
-    }
-  },
-  async created() {
-    if (!this.id) {
-      this.error = 'No country ID provided';
-      this.loading = false;
-      return;
-    }
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const country = ref(null);
+    const loading = ref(true);
+    const error = ref(null);
 
-    try {
-      const response = await axios.get(`http://localhost:3000/api/countries/${this.id}`);
-      this.country = response.data;
-    } catch (error) {
-      console.error('Error fetching country details:', error);
-      this.error = 'Failed to fetch country details. Please try again later.';
-    } finally {
-      this.loading = false;
-    }
-  },
-  methods: {
-    goBack() {
-      this.$router.push('/');
-    }
+    const fetchCountryDetails = async (id) => {
+      loading.value = true;
+      error.value = null;
+      try {
+        const response = await axios.get(`http://localhost:3000/api/countries/${id}`);
+        country.value = response.data;
+      } catch (err) {
+        error.value = 'Failed to fetch country details';
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(() => fetchCountryDetails(route.params.id));
+
+    watch(() => route.params.id, (newId) => {
+      fetchCountryDetails(newId);
+    });
+
+    const goBack = () => {
+      router.push('/');
+    };
+
+    return {
+      country,
+      loading,
+      error,
+      goBack
+    };
   }
-}
+};
 </script>
 
 <style scoped>
-/* Add your styles here */
+.country-details {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 </style>

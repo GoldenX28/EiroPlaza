@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import Country from './models/Country.js';
 import authRoutes from './routes/auth.js';
+import countriesRoutes from './routes/countries.js';
 
 dotenv.config();
 
@@ -22,8 +23,16 @@ mongoose.connect(process.env.MONGODB_URI)
     process.exit(1);
   });
 
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the EiroPlaza API');
+});
+
 // Use auth routes
 app.use('/api/auth', authRoutes);
+
+// Use countries routes
+app.use('/api/countries', countriesRoutes);
 
 // Routes
 

@@ -11,7 +11,7 @@ const CountrySchema = new mongoose.Schema({
     required: true
   },
   population: {
-    type: String,
+    type: Number,
     required: true
   },
   languages: {
@@ -21,7 +21,11 @@ const CountrySchema = new mongoose.Schema({
   timezone: {
     type: String,
     required: true
-  }
+  },
+  currency: {
+    name: String,
+    code: String
+  },
 });
 
 export default mongoose.model('Country', CountrySchema);

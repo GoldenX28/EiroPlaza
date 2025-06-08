@@ -15,8 +15,7 @@ const routes = [
   {
     path: '/country/:id',
     name: 'CountryDetails',
-    component: CountryDetails,
-    props: true
+    component: CountryDetails
   },
   {
     path: '/about',

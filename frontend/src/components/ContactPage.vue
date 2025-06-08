@@ -24,11 +24,13 @@
     <button @click="goBack" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
       Back to Home
     </button>
+    <DbHealthCheck />
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+
 
 export default {
   name: 'ContactPage',

@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <NavBar />
+    <CountrySearch />
     <router-view></router-view>
   </div>
 </template>
@@ -8,11 +9,13 @@
 <script>
 import { ref, provide, onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
+import CountrySearch from './components/CountrySearch.vue';
 
 export default {
   name: 'App',
   components: {
-    NavBar
+    NavBar,
+    CountrySearch
   },
   setup() {
     const isLoggedIn = ref(false)

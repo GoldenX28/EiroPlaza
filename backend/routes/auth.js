@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { authenticateUser } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -15,7 +16,6 @@ router.post('/register', async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-
     // Create new user
     const user = new User({
       username,
@@ -81,23 +81,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Middleware to check if user is authenticated
-const authenticateUser = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Token is not valid' });
-  }
-};
-
 // Get user profile
 router.get('/profile', authenticateUser, async (req, res) => {
   try {
@@ -135,6 +118,16 @@ router.put('/profile', authenticateUser, async (req, res) => {
     console.error('Error updating user profile:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
+});
+
+// Get current user
+router.get('/me', authenticateUser, (req, res) => {
+  res.json({
+    id: req.user._id,
+    username: req.user.username,
+    email: req.user.email,
+    role: req.user.role
+  });
 });
 
 export default router;

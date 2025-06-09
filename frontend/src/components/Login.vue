@@ -17,7 +17,7 @@ import { useStore } from 'vuex'; // Import useStore from vuex
 import axios from 'axios';
 
 export default {
-  name: 'Login',
+   name: 'LoginForm',
   setup() {
     const router = useRouter();
     const store = useStore(); // Use the store
@@ -27,22 +27,23 @@ export default {
     const error = ref('');
 
     const login = async () => {
-      try {
-        const response = await axios.post('http://localhost:3000/api/auth/login', {
-          email: email.value,
-          password: password.value
-        });
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-          store.dispatch('login', response.data.user);
-          router.push('/');
-        } else {
-          error.value = 'Login failed: No token received';
-        }
-      } catch (err) {
-        error.value = err.response?.data?.message || 'Login failed';
-      }
-    };
+  try {
+    const response = await axios.post('http://localhost:3000/api/auth/login', {
+      email: email.value,
+      password: password.value
+    });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      console.log('Token stored:', response.data.token); // Add this line
+      store.dispatch('login', response.data.user);
+      router.push('/');
+    } else {
+      error.value = 'Login failed: No token received';
+    }
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Login failed';
+  }
+};
 
     return {
       email,

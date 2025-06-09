@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import countriesRoutes from './routes/countries.js';
 import dbHealthRoutes from './routes/dbHealth.js';  
 import adminRoutes from './routes/admin.js';
+import inquiryRoutes from './routes/inquiries.js';
 
 dotenv.config();
 
@@ -41,6 +42,9 @@ app.use('/api/db-health', dbHealthRoutes);  // Add this line
 
 // Use admin routes
 app.use('/api/admin', adminRoutes);
+
+// Use inquiry routes
+app.use('/api/inquiries', inquiryRoutes);
 
 // Routes
 
@@ -147,7 +151,6 @@ async function getCountry(req, res, next) {
   res.country = country;
   next();
 }
-
 // Get user count
 app.get('/api/user-count', async (req, res) => {
   try {

@@ -19,35 +19,29 @@
 </template>
 
 <script>
-import { inject, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default {
   name: 'NavBar',
   setup() {
-    const auth = inject('auth')
-    const router = useRouter()
-    const store = useStore()
+    const store = useStore();
+    const router = useRouter();
 
-    const isLoggedIn = computed(() => {
-      console.log('NavBar: isLoggedIn computed', auth.isLoggedIn.value)
-      return auth.isLoggedIn.value
-    })
-
-    const isAdmin = computed(() => store.state.isAdmin)
+    const isLoggedIn = computed(() => store.state.isLoggedIn);
+    const isAdmin = computed(() => store.state.isAdmin);
 
     const handleLogout = () => {
-      console.log('Logout clicked')
-      auth.logout()
-      router.push('/')
-    }
+      store.dispatch('logout');
+      router.push('/');
+    };
 
     return {
       isLoggedIn,
       isAdmin,
       handleLogout
-    }
+    };
   }
-}
+};
 </script>

@@ -3,18 +3,23 @@ import User from '../models/User.js';
 
 export const authenticateUser = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log('Received token:', token); // Add this line
+    if (!token) {
+      throw new Error('No token provided');
+    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.id, 'tokens.token': token });
+    const user = await User.findOne({ _id: decoded.id });
 
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
 
     req.token = token;
     req.user = user;
     next();
   } catch (error) {
+    console.error('Authentication error:', error.message); // Add this line
     res.status(401).send({ error: 'Please authenticate.' });
   }
 };

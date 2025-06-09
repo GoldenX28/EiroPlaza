@@ -7,7 +7,7 @@ import RegisterForm from '@/components/Register.vue'
 import LoginForm from '@/components/Login.vue'  
 import UserProfile from '@/components/UserProfile.vue'
 import AdminPanel from '@/components/AdminPanel.vue';
-import store from '../store' // Add this import
+import store from '../store'
 
 const routes = [
   {
@@ -59,26 +59,27 @@ const router = createRouter({
   routes
 })
 
-// Add navigation guard to check for authentication
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = store.state.isLoggedIn;
-  const isAdmin = store.state.isAdmin;
+router.beforeEach(async (to, from, next) => {
+  // Wait for auth to initialize before proceeding
+  if (!store.state.authInitialized) {
+    await store.dispatch('initializeAuth')
+  }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!isLoggedIn) {
-      next({ name: 'Login' });
+    if (!store.state.isLoggedIn) {
+      next({ name: 'Login' })
     } else {
-      next();
+      next()
     }
   } else if (to.matched.some(record => record.meta.requiresAdmin)) {
-    if (!isAdmin) {
-      next({ name: 'Login' });
+    if (!store.state.isAdmin) {
+      next({ name: 'Home' })
     } else {
-      next();
+      next()
     }
   } else {
-    next();
+    next()
   }
-});
+})
 
 export default router

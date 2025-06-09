@@ -5,11 +5,11 @@
     <div v-if="isLoggedIn">
       <p v-if="isAdmin" class="mb-4">Welcome, Admin! Here are the recent inquiries:</p>
       <ul v-if="isAdmin" class="list-disc pl-5 mb-4">
-        <li>Inquiry 1</li>
-        <li>Inquiry 2</li>
-        <li>Inquiry 3</li>
+        <li v-for="inquiry in inquiries" :key="inquiry._id">
+          {{ inquiry.userId.username }}: {{ inquiry.message }}
+        </li>
       </ul>
-      <p v-else class="mb-4">Welcome, {{ user.name }}! How can we help you today?</p>
+      <p v-else class="mb-4">Welcome, {{ user.username }}! How can we help you today?</p>
       <form @submit.prevent="submitInquiry" class="space-y-4">
         <textarea v-model="inquiry" rows="4" class="w-full p-2 border rounded" placeholder="Your inquiry..."></textarea>
         <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Submit Inquiry</button>
@@ -24,19 +24,19 @@
     <button @click="goBack" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
       Back to Home
     </button>
-    <DbHealthCheck />
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-
+import axios from 'axios'
 
 export default {
   name: 'ContactPage',
   data() {
     return {
-      inquiry: ''
+      inquiry: '',
+      inquiries: []
     }
   },
   computed: {
@@ -49,11 +49,31 @@ export default {
     goToLogin() {
       this.$router.push('/login');
     },
-    submitInquiry() {
-      // Handle inquiry submission here
-      console.log('Inquiry submitted:', this.inquiry);
-      this.inquiry = ''; // Clear the form after submission
+    async submitInquiry() {
+      try {
+        await axios.post('http://localhost:3000/api/inquiries', { message: this.inquiry });
+        console.log('Inquiry submitted successfully');
+        this.inquiry = ''; // Clear the form after submission
+        if (this.isAdmin) {
+          this.fetchInquiries(); // Refresh the list for admin
+        }
+      } catch (error) {
+        console.error('Error submitting inquiry:', error);
+      }
+    },
+    async fetchInquiries() {
+      if (this.isAdmin) {
+        try {
+          const response = await axios.get('http://localhost:3000/api/inquiries');
+          this.inquiries = response.data;
+        } catch (error) {
+          console.error('Error fetching inquiries:', error);
+        }
+      }
     }
+  },
+  mounted() {
+    this.fetchInquiries();
   }
 }
 </script>

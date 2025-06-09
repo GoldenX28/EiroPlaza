@@ -8,6 +8,7 @@ import countriesRoutes from './routes/countries.js';
 import dbHealthRoutes from './routes/dbHealth.js';  
 import adminRoutes from './routes/admin.js';
 import inquiryRoutes from './routes/inquiries.js';
+import postRoutes from './routes/posts.js';
 
 dotenv.config();
 
@@ -45,6 +46,9 @@ app.use('/api/admin', adminRoutes);
 
 // Use inquiry routes
 app.use('/api/inquiries', inquiryRoutes);
+
+// Use post routes
+app.use('/api/posts', postRoutes);
 
 // Routes
 

@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
@@ -34,6 +35,10 @@ router.post('/register', async (req, res) => {
 
 // Login route
 router.post('/login', async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    console.error('Database not connected');
+    return res.status(500).json({ message: 'Database connection error' });
+  }
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);

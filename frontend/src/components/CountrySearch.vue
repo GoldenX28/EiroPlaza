@@ -5,20 +5,20 @@
       @input="debounceSearch"
       type="text" 
       placeholder="Search for a country..."
-      class="search-input"
+      class="w-full p-2 rounded-md text-gray-800 bg-white"
     >
-    <div v-if="loading">Searching...</div>
-    <ul v-else-if="searchResults.length > 0" class="search-results">
+    <div v-if="loading" class="absolute bg-white p-2 rounded-md mt-1 w-full text-gray-800 z-10">Searching...</div>
+    <ul v-else-if="searchResults.length > 0" class="absolute bg-white p-2 rounded-md mt-1 w-full max-h-60 overflow-y-auto z-10">
       <li 
         v-for="country in searchResults" 
         :key="country._id" 
-        class="search-result-item"
+        class="p-2 hover:bg-gray-100 cursor-pointer text-gray-800"
         @click="goToCountryDetails(country)"
       >
         {{ country.name }} - {{ country.capital }}
       </li>
     </ul>
-    <div v-else-if="searchQuery && !loading">No results found</div>
+    <div v-else-if="searchQuery && !loading" class="absolute bg-white p-2 rounded-md mt-1 w-full text-gray-800 z-10">No results found</div>
   </div>
 </template>
 
@@ -79,6 +79,7 @@ export default {
 
 <style scoped>
 .country-search {
+  position: relative;
   max-width: 400px;
   margin: 0 auto;
 }

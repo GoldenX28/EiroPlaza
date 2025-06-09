@@ -9,5 +9,13 @@ module.exports = {
         extensions: ['js', 'vue'],
         files: ['src/**/*.{js,vue}']
       }])
+  },
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
   }
 }

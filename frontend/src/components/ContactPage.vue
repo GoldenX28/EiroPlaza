@@ -3,13 +3,7 @@
     <h1 class="text-3xl font-bold text-blue-700 mb-4">Contact Us</h1>
     
     <div v-if="isLoggedIn">
-      <p v-if="isAdmin" class="mb-4">Welcome, Admin! Here are the recent inquiries:</p>
-      <ul v-if="isAdmin" class="list-disc pl-5 mb-4">
-        <li v-for="inquiry in inquiries" :key="inquiry._id">
-          {{ inquiry.userId.username }}: {{ inquiry.message }}
-        </li>
-      </ul>
-      <p v-else class="mb-4">Welcome, {{ user.username }}! How can we help you today?</p>
+      <p class="mb-4">Welcome, {{ user.username }}! How can we help you today?</p>
       <form @submit.prevent="submitInquiry" class="space-y-4">
         <textarea v-model="inquiry" rows="4" class="w-full p-2 border rounded" placeholder="Your inquiry..."></textarea>
         <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Submit Inquiry</button>
@@ -35,12 +29,11 @@ export default {
   name: 'ContactPage',
   data() {
     return {
-      inquiry: '',
-      inquiries: []
+      inquiry: ''
     }
   },
   computed: {
-    ...mapState(['isLoggedIn', 'isAdmin', 'user'])
+    ...mapState(['isLoggedIn', 'user'])
   },
   methods: {
     goBack() {
@@ -54,26 +47,14 @@ export default {
         await axios.post('http://localhost:3000/api/inquiries', { message: this.inquiry });
         console.log('Inquiry submitted successfully');
         this.inquiry = ''; // Clear the form after submission
-        if (this.isAdmin) {
-          this.fetchInquiries(); // Refresh the list for admin
-        }
+        // Show a success message to the user
+        alert('Your inquiry has been submitted successfully!');
       } catch (error) {
         console.error('Error submitting inquiry:', error);
-      }
-    },
-    async fetchInquiries() {
-      if (this.isAdmin) {
-        try {
-          const response = await axios.get('http://localhost:3000/api/inquiries');
-          this.inquiries = response.data;
-        } catch (error) {
-          console.error('Error fetching inquiries:', error);
-        }
+        // Show an error message to the user
+        alert('There was an error submitting your inquiry. Please try again.');
       }
     }
-  },
-  mounted() {
-    this.fetchInquiries();
   }
 }
 </script>

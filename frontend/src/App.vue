@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <NavBar />
-    <CountrySearch />
+    <div class="bg-blue-500 p-4 flex items-center justify-center">
+      <NavBar />
+    </div>
     <router-view></router-view>
   </div>
 </template>
@@ -9,13 +10,11 @@
 <script>
 import { ref, provide, onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
-import CountrySearch from './components/CountrySearch.vue';
 
 export default {
   name: 'App',
   components: {
-    NavBar,
-    CountrySearch
+    NavBar
   },
   setup() {
     const isLoggedIn = ref(false)
@@ -62,6 +61,7 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-align: center;
   color: #2c3e50;
 }
 </style>

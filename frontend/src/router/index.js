@@ -8,6 +8,8 @@ import LoginForm from '@/components/Login.vue'
 import UserProfile from '@/components/UserProfile.vue'
 import AdminPanel from '@/components/AdminPanel.vue';
 import store from '../store'
+import PostList from '../components/PostList.vue';
+import PostDetail from '../components/PostDetail.vue';
 
 const routes = [
   {
@@ -51,6 +53,16 @@ const routes = [
     name: 'AdminPanel',
     component: AdminPanel,
     meta: { requiresAdmin: true }
+  },
+  {
+    path: '/posts',
+    name: 'Posts',
+    component: PostList
+  },
+  {
+    path: '/post/:id',
+    name: 'PostDetail',
+    component: PostDetail
   }
 ]
 

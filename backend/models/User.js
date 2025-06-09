@@ -31,7 +31,11 @@ const UserSchema = new mongoose.Schema({
   favoriteCountries: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Country'
-  }]
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // Password hashing middleware

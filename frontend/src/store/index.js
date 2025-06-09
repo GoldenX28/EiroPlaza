@@ -8,27 +8,25 @@ export default createStore({
   },
   mutations: {
     setLoginStatus(state, status) {
-      state.isLoggedIn = status
+      state.isLoggedIn = status;
     },
     setAdminStatus(state, status) {
-      state.isAdmin = status
+      state.isAdmin = status;
     },
     setUser(state, user) {
-      state.user = user
+      state.user = user;
     }
   },
   actions: {
-    login({ commit }, user) {
-      // Perform login logic here
-      commit('setLoginStatus', true)
-      commit('setAdminStatus', user.isAdmin)
-      commit('setUser', user)
+    login({ commit }, userData) {
+      commit('setLoginStatus', true);
+      commit('setAdminStatus', userData.role === 'admin');
+      commit('setUser', userData);
     },
     logout({ commit }) {
-      // Perform logout logic here
-      commit('setLoginStatus', false)
-      commit('setAdminStatus', false)
-      commit('setUser', null)
+      commit('setLoginStatus', false);
+      commit('setAdminStatus', false);
+      commit('setUser', null);
     }
   }
 })

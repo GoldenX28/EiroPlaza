@@ -11,39 +11,35 @@
 </template>
 
 <script>
-import { ref, inject } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex'; // Import useStore from vuex
+import axios from 'axios';
 
 export default {
-  name: 'LoginForm',
+  name: 'Login',
   setup() {
-    const email = ref('')
-    const password = ref('')
-    const error = ref(null)
-    const auth = inject('auth')
-    const router = useRouter()
+    const router = useRouter();
+    const store = useStore(); // Use the store
+
+    const email = ref('');
+    const password = ref('');
+    const error = ref('');
 
     const login = async () => {
       try {
-        console.log('Login attempt with email:', email.value);
         const response = await axios.post('http://localhost:3000/api/auth/login', {
           email: email.value,
           password: password.value
         });
-        console.log('Login response:', response.data);
         if (response.data.token) {
           localStorage.setItem('token', response.data.token);
-          auth.login();
-          console.log('Login successful, redirecting to home');
+          store.dispatch('login', response.data.user);
           router.push('/');
         } else {
-          console.error('Login failed: No token received');
           error.value = 'Login failed: No token received';
         }
       } catch (err) {
-        console.error('Login error:', err);
-        console.error('Error response:', err.response?.data);
         error.value = err.response?.data?.message || 'Login failed';
       }
     };
@@ -53,7 +49,7 @@ export default {
       password,
       error,
       login
-    }
+    };
   }
-}
+};
 </script>

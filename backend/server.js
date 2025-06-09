@@ -5,6 +5,8 @@ import cors from 'cors';
 import Country from './models/Country.js';
 import authRoutes from './routes/auth.js';
 import countriesRoutes from './routes/countries.js';
+import dbHealthRoutes from './routes/dbHealth.js';  
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -16,12 +18,12 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected...'))
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
 // Root route
 app.get('/', (req, res) => {
@@ -33,6 +35,12 @@ app.use('/api/auth', authRoutes);
 
 // Use countries routes
 app.use('/api/countries', countriesRoutes);
+
+// Use db health routes
+app.use('/api/db-health', dbHealthRoutes);  // Add this line
+
+// Use admin routes
+app.use('/api/admin', adminRoutes);
 
 // Routes
 
@@ -139,6 +147,16 @@ async function getCountry(req, res, next) {
   res.country = country;
   next();
 }
+
+// Get user count
+app.get('/api/user-count', async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: 'Error counting users', error: error.message });
+  }
+});
 
 // Start server
 app.listen(port, () => {

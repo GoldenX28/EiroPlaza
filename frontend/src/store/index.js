@@ -9,30 +9,31 @@ export default createStore({
     authInitialized: false // Add this line
   },
   mutations: {
-    setLoginStatus(state, status) {
-      state.isLoggedIn = status;
+    SET_LOGGED_IN(state, value) {
+      state.isLoggedIn = value;
     },
-    setAdminStatus(state, status) {
+    SET_ADMIN_STATUS(state, status) {
       state.isAdmin = status;
     },
-    setUser(state, user) {
+    SET_USER(state, user) {
       state.user = user;
     },
-    setAuthInitialized(state, status) {
+    SET_AUTH_INITIALIZED(state, status) {
       state.authInitialized = status;
     }
   },
   actions: {
-    login({ commit }, userData) {
-      commit('setLoginStatus', true);
-      commit('setAdminStatus', userData.role === 'admin');
-      commit('setUser', userData);
+    login({ commit }, user) {
+      console.log('Storing user in Vuex:', user);
+      commit('SET_USER', user);
+      commit('SET_LOGGED_IN', true);
+      commit('SET_ADMIN_STATUS', user.role === 'admin');
     },
     logout({ commit }) {
       localStorage.removeItem('token');
-      commit('setLoginStatus', false);
-      commit('setAdminStatus', false);
-      commit('setUser', null);
+      commit('SET_USER', null);
+      commit('SET_LOGGED_IN', false);
+      commit('SET_ADMIN_STATUS', false);
     },
     async initializeAuth({ commit }) {
       const token = localStorage.getItem('token');
@@ -41,15 +42,18 @@ export default createStore({
           const response = await axios.get('http://localhost:3000/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
-          commit('setLoginStatus', true);
-          commit('setAdminStatus', response.data.role === 'admin');
-          commit('setUser', response.data);
+          commit('SET_LOGGED_IN', true);
+          commit('SET_ADMIN_STATUS', response.data.role === 'admin');
+          commit('SET_USER', response.data);
         } catch (error) {
           console.error('Failed to initialize auth:', error);
           localStorage.removeItem('token');
         }
       }
-      commit('setAuthInitialized', true); // Add this line
+      commit('SET_AUTH_INITIALIZED', true); // Add this line
     }
+  },
+  getters: {
+    isAdmin: state => state.user && state.user.role === 'admin'
   }
 })

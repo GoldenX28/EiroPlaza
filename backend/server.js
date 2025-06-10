@@ -9,6 +9,11 @@ import dbHealthRoutes from './routes/dbHealth.js';
 import adminRoutes from './routes/admin.js';
 import inquiryRoutes from './routes/inquiries.js';
 import postRoutes from './routes/posts.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -18,6 +23,9 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+// Serve static files from the "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {

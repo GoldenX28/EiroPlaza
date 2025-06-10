@@ -1,18 +1,30 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import Post from '../models/Post.js';
 import { authenticateUser } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Set up __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/') // Make sure this directory exists
+    cb(null, uploadsDir)
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)) // Appending extension
+    cb(null, Date.now() + '-' + file.originalname)
   }
 });
 
@@ -32,7 +44,7 @@ router.get('/', async (req, res) => {
 router.post('/', authenticateUser, upload.array('images', 5), async (req, res) => {
   try {
     const { title, country, content, rating } = req.body;
-    const images = req.files.map(file => file.path);
+    const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
     const newPost = new Post({
       user: req.user._id,
@@ -40,12 +52,13 @@ router.post('/', authenticateUser, upload.array('images', 5), async (req, res) =
       title,
       content,
       images,
-      rating
+      rating: Number(rating)
     });
 
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
+    console.error('Error creating post:', error);
     res.status(400).json({ message: 'Error creating post', error: error.message });
   }
 });

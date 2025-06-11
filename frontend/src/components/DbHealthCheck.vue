@@ -1,32 +1,22 @@
 <template>
-  <div v-if="isAdmin" class="db-health-check">
-    <h2 class="text-2xl font-bold mb-4">Database Health Check</h2>
-    <button @click="checkDbHealth" class="check-button mb-4">
+  <div v-if="isAdmin" class="db-health-check bg-gray-100 p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Database Health Check</h2>
+    <button @click="checkDbHealth" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
       Check Database Health
     </button>
     <div v-if="loading" class="text-gray-600">Checking database health...</div>
     <div v-else-if="error" class="text-red-600">{{ error }}</div>
-    <div v-else-if="dbStatus" class="status-display">
-      <h3 class="font-semibold">Main Connection: 
-        <span :class="dbStatus.main?.connected ? 'text-green-600' : 'text-red-600'">
-          {{ dbStatus.main?.connected ? 'Connected' : 'Not Connected' }}
-        </span>
-      </h3>
-      <p v-if="dbStatus.main?.error" class="error text-red-600">Error: {{ dbStatus.main.error }}</p>
-      
-      <h3 class="font-semibold mt-2">Countries Collection: 
-        <span :class="dbStatus.countries?.connected ? 'text-green-600' : 'text-red-600'">
-          {{ dbStatus.countries?.connected ? 'Connected' : 'Not Connected' }}
-        </span>
-      </h3>
-      <p v-if="dbStatus.countries?.error" class="error text-red-600">Error: {{ dbStatus.countries.error }}</p>
-      
-      <h3 class="font-semibold mt-2">Users Collection: 
-        <span :class="dbStatus.users?.connected ? 'text-green-600' : 'text-red-600'">
-          {{ dbStatus.users?.connected ? 'Connected' : 'Not Connected' }}
-        </span>
-      </h3>
-      <p v-if="dbStatus.users?.error" class="error text-red-600">Error: {{ dbStatus.users.error }}</p>
+    <div v-else-if="dbStatus" class="space-y-4">
+      <div v-for="(status, dbName) in dbStatus" :key="dbName" class="bg-white p-4 rounded-md shadow">
+        <h3 class="font-semibold text-lg mb-2 capitalize">{{ dbName }} Database:</h3>
+        <p class="mb-1">
+          Connection: 
+          <span :class="status.connected ? 'text-green-600' : 'text-red-600'">
+            {{ status.connected ? 'Connected' : 'Not Connected' }}
+          </span>
+        </p>
+        <p v-if="status.error" class="text-red-600">Error: {{ status.error }}</p>
+      </div>
     </div>
   </div>
 </template>

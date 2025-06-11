@@ -145,7 +145,7 @@ export default {
       formData.append('country', post.value.country);
       formData.append('content', post.value.content);
       formData.append('rating', post.value.rating);
-      selectedImages.value.forEach((image, index) => {
+      selectedImages.value.forEach((image) => {
         formData.append('images', image.file);
       });
 

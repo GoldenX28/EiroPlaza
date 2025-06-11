@@ -2,7 +2,7 @@
   <div class="admin-panel p-6 bg-white rounded-lg shadow">
     <h2 class="text-2xl font-bold mb-4">User Management</h2>
     <div v-if="loading" class="text-center">Loading users...</div>
-    <div v-else-if="error" class="text-red-500">{{ error }}</div>
+    <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
     <table v-else class="w-full">
       <thead>
         <tr>
@@ -105,7 +105,7 @@
       <transition name="fade">
         <div v-if="showInquiriesLog">
           <div v-if="loadingInquiries" class="text-center">Loading inquiries...</div>
-          <div v-else-if="inquiriesError" class="text-red-500">{{ inquiriesError }}</div>
+          <div v-if="inquiriesError" class="text-red-500 mb-4">{{ inquiriesError }}</div>
           <table v-else class="w-full">
             <thead>
               <tr>
@@ -116,9 +116,9 @@
             </thead>
             <tbody>
               <tr v-for="inquiry in inquiries" :key="inquiry._id" class="border-b">
-                <td>{{ inquiry.userId.username }}</td>
+                <td>{{ inquiry.userId?.username || 'Unknown User' }}</td>
                 <td>{{ inquiry.message }}</td>
-                <td>{{ new Date(inquiry.createdAt).toLocaleString() }}</td>
+                <td>{{ formatDate(inquiry.createdAt) }}</td>
               </tr>
             </tbody>
           </table>
@@ -166,12 +166,10 @@ export default {
 
     const updateUser = async (user) => {
       if (user.role === 'admin') {
-        // If trying to change an admin's role, revert the change and show an alert
         user.role = 'admin';
         alert("Admin roles cannot be changed.");
         return;
       }
-      // Proceed with the update for non-admin users
       try {
         await axios.put(`http://localhost:3000/api/admin/users/${user._id}`, { role: user.role });
         console.log('User updated successfully');
@@ -183,7 +181,7 @@ export default {
     const editUser = (user) => {
       editingUser.value = { ...user };
       if (user.role === 'admin') {
-        editingUser.value.role = 'admin'; // Ensure admin role is locked
+        editingUser.value.role = 'admin';
       }
       showEditModal.value = true;
     };
@@ -195,7 +193,6 @@ export default {
 
     const saveUserEdit = async () => {
       if (editingUser.value.role === 'admin') {
-        // Ensure we're not changing an admin's role
         editingUser.value.role = 'admin';
       }
       try {
@@ -229,7 +226,7 @@ export default {
     };
 
     const fetchInquiries = async () => {
-      if (inquiries.value.length > 0) return; // Only fetch if not already loaded
+      if (inquiries.value.length > 0) return;
       try {
         loadingInquiries.value = true;
         inquiriesError.value = null;
@@ -237,7 +234,10 @@ export default {
         const response = await axios.get('http://localhost:3000/api/inquiries', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        inquiries.value = response.data;
+        inquiries.value = response.data.map(inquiry => ({
+          ...inquiry,
+          userId: inquiry.userId || { username: 'Unknown User' }
+        }));
       } catch (err) {
         console.error('Error fetching inquiries:', err);
         inquiriesError.value = 'Failed to fetch inquiries. Please try again.';
@@ -251,6 +251,11 @@ export default {
       if (showInquiriesLog.value) {
         fetchInquiries();
       }
+    };
+
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Unknown Date';
+      return new Date(dateString).toLocaleString();
     };
 
     onMounted(() => {
@@ -272,7 +277,8 @@ export default {
       showInquiriesLog,
       toggleInquiriesLog,
       showEditModal,
-      editingUser
+      editingUser,
+      formatDate
     };
   }
 };

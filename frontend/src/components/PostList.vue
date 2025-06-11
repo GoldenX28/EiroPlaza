@@ -18,13 +18,11 @@
             My Posts
           </button>
         </div>
-        <button 
-          v-if="isLoggedIn"
-          @click="showCreatePostForm = true" 
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Create Post
-        </button>
+        <div v-if="isLoggedIn" class="mb-4">
+          <button @click="showCreatePostForm = !showCreatePostForm" class="bg-blue-500 text-white px-4 py-2 rounded">
+            {{ showCreatePostForm ? 'Cancel' : 'Create New Post' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -39,13 +37,13 @@
     <div class="container mx-auto">
       <div v-for="post in filteredPosts" :key="post._id" class="mb-4 p-4 border rounded shadow-md">
         <h3 class="text-xl font-semibold">{{ post.title }}</h3>
-        <p class="text-sm text-gray-600">By {{ post.user.username }} | Country: {{ post.country.name }}</p>
+        <p class="text-sm text-gray-600">By {{ post.user?.username || 'Unknown User' }} | Country: {{ post.country.name }}</p>
         <div class="flex items-center mt-2">
           <span class="text-yellow-500 mr-1">★</span>
           <span>{{ post.rating }}/5</span>
         </div>
         <p class="mt-2">{{ post.content.substring(0, 100) }}...</p>
-        <router-link :to="'/post/' + post._id" class="mt-2 inline-block text-blue-500 hover:underline">Read more</router-link>
+        <router-link :to="{ name: 'PostDetail', params: { id: post._id } }" class="mt-2 inline-block text-blue-500 hover:underline">Read more</router-link>
       </div>
     </div>
   </div>
@@ -75,7 +73,7 @@ export default {
 
     const filteredPosts = computed(() => {
       if (viewMode.value === 'my' && isLoggedIn.value) {
-        return posts.value.filter(post => isEqualId(post.user._id, currentUserId.value));
+        return posts.value.filter(post => post.user && isEqualId(post.user._id, currentUserId.value));
       }
       return posts.value;
     });

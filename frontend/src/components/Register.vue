@@ -1,13 +1,32 @@
 <template>
-  <div class="register-page p-6 bg-blue-50 rounded-lg shadow">
-    <h1 class="text-3xl font-bold text-blue-700 mb-4">Register</h1>
-    <form @submit.prevent="register" class="space-y-4">
-      <input v-model="username" type="text" placeholder="Username" required class="w-full p-2 border rounded">
-      <input v-model="email" type="email" placeholder="Email" required class="w-full p-2 border rounded">
-      <input v-model="password" type="password" placeholder="Password" required class="w-full p-2 border rounded">
-      <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Register</button>
-    </form>
-    <p v-if="error" class="text-red-500 mt-4">{{ error }}</p>
+  <div class="register-page min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Register</h1>
+      <form @submit.prevent="register" class="space-y-6">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+          <input v-model="username" id="username" type="text" placeholder="Enter your username" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input v-model="email" id="email" type="email" placeholder="Enter your email" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input v-model="password" id="password" type="password" placeholder="Enter your password" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+          Register
+        </button>
+      </form>
+      <p v-if="error" class="mt-4 text-center text-sm text-red-600">{{ error }}</p>
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Already have an account? 
+        <router-link to="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+          Log in
+        </router-link>
+      </p>
+    </div>
   </div>
 </template>
 

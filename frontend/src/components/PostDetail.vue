@@ -2,17 +2,27 @@
   <div v-if="post" class="post-detail max-w-4xl mx-auto p-6">
     <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-8">
       <div class="p-6">
-        <h2 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-3xl font-bold text-gray-800">{{ post.title }}</h2>
+          <button 
+            v-if="isAuthorized" 
+            @click="deletePost" 
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Delete Post
+          </button>
+        </div>
+        
         <div class="flex items-center mb-4 text-sm text-gray-600">
-          <span class="mr-4">By {{ post.user.username }}</span>
-          <span class="mr-4">Country: {{ post.country.name }}</span>
+          <span class="mr-4">By {{ getUserName(post.user) }}</span>
+          <span class="mr-4">Country: {{ getCountryName(post.country) }}</span>
           <div class="flex items-center">
             <span class="text-yellow-500 mr-1">★</span>
             <span>{{ post.rating }}/5</span>
           </div>
         </div>
         
-        <div class="image-container my-6">
+        <div v-if="post.images && post.images.length > 0" class="image-container my-6">
           <div v-for="image in post.images" :key="image" class="image-wrapper">
             <img :src="getImageUrl(image)" alt="Post image" class="post-image">
           </div>
@@ -27,13 +37,13 @@
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
       <div class="p-6">
         <h3 class="text-2xl font-semibold mb-4 text-gray-800">Comments</h3>
-        <div v-if="post.comments.length === 0" class="text-gray-500 italic mb-4">
+        <div v-if="!post.comments || post.comments.length === 0" class="text-gray-500 italic mb-4">
           No comments yet. Be the first to comment!
         </div>
         <div v-else class="space-y-4 mb-6">
           <div v-for="comment in post.comments" :key="comment._id" class="bg-gray-100 rounded-lg p-4">
             <div class="flex items-center justify-between mb-2">
-              <span class="font-semibold text-blue-600">{{ comment.user.username }}</span>
+              <span class="font-semibold text-blue-600">{{ getUserName(comment.user) }}</span>
               <span class="text-sm text-gray-500">{{ formatDate(comment.createdAt) }}</span>
             </div>
             <p class="text-gray-800">{{ comment.content }}</p>
@@ -57,17 +67,23 @@
       </div>
     </div>
   </div>
+  <div v-else class="text-center p-6">
+    Loading post...
+  </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default {
   name: 'PostDetail',
   setup() {
     const route = useRoute();
+    const router = useRouter();
+    const store = useStore();
     const post = ref(null);
     const newComment = ref('');
 
@@ -82,8 +98,11 @@ export default {
 
     const addComment = async () => {
       try {
+        const token = localStorage.getItem('token');
         const response = await axios.post(`http://localhost:3000/api/posts/${route.params.id}/comments`, {
           content: newComment.value
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         post.value = response.data;
         newComment.value = '';
@@ -92,23 +111,62 @@ export default {
       }
     };
 
+    const deletePost = async () => {
+      if (confirm('Are you sure you want to delete this post?')) {
+        try {
+          const token = localStorage.getItem('token');
+          await axios.delete(`http://localhost:3000/api/posts/${route.params.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          router.push('/posts');
+        } catch (error) {
+          console.error('Error deleting post:', error);
+          alert('Failed to delete post. ' + (error.response?.data?.message || 'Please try again.'));
+        }
+      }
+    };
+
+    const isAuthorized = computed(() => {
+      const currentUser = store.state.user;
+      return currentUser && (
+        currentUser.role === 'admin' || 
+        (post.value && post.value.user && post.value.user._id === currentUser._id)
+      );
+    });
+
     const formatDate = (dateString) => {
       const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    const getUserName = (user) => {
+      return user && user.username ? user.username : 'Unknown User';
+    };
+
+    const getCountryName = (country) => {
+      return country && country.name ? country.name : 'Unknown Country';
+    };
+
+    const getImageUrl = (imagePath) => {
+      return `http://localhost:3000${imagePath}`;
+    };
+
     onMounted(fetchPost);
 
-    return { post, newComment, addComment, formatDate };
-  },
-  methods: {
-    getImageUrl(imagePath) {
-      return `http://localhost:3000${imagePath}`;
-    }
+    return { 
+      post, 
+      newComment, 
+      addComment, 
+      formatDate, 
+      getUserName, 
+      getCountryName, 
+      getImageUrl,
+      deletePost,
+      isAuthorized
+    };
   }
 }
 </script>
-
 <style scoped>
 .image-container {
   display: grid;

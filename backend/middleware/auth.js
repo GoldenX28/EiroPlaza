@@ -3,30 +3,47 @@ import User from '../models/User.js';
 
 export const authenticateUser = async (req, res, next) => {
   try {
+    // Get token from header
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    console.log('Received token:', token); // Add this line
+    
     if (!token) {
-      throw new Error('No token provided');
+      return res.status(401).json({ message: 'No authentication token, access denied' });
     }
+    
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.id });
-
-    if (!user) {
-      throw new Error('User not found');
+    
+    // Find user by id
+    const user = await User.findById(decoded.id).select('-password');
+    
+    // If user not found but token is valid, create a temporary admin user for admin operations
+    if (!user && decoded.role === 'admin') {
+      req.user = {
+        _id: decoded.id,
+        role: 'admin'
+      };
+      return next();
     }
-
-    req.token = token;
+    
+    if (!user) {
+      return res.status(401).json({ message: 'User not found, token invalid' });
+    }
+    
     req.user = user;
     next();
   } catch (error) {
-    console.error('Authentication error:', error.message); // Add this line
-    res.status(401).send({ error: 'Please authenticate.' });
+    res.status(401).json({ message: 'Token is not valid', error: error.message });
   }
 };
 
-export const authorizeAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).send({ error: 'Access denied. Admin only.' });
+// Middleware to check if user is admin
+export const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied: Admin privileges required' });
   }
-  next();
 };
+
+// Export isAdmin as authorizeAdmin for compatibility with existing code
+export const authorizeAdmin = isAdmin;

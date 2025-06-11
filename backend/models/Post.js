@@ -21,7 +21,7 @@ const PostSchema = new mongoose.Schema({
     required: true
   },
   images: [{
-    type: String // URLs to images
+    type: String 
   }],
   rating: {
     type: Number,

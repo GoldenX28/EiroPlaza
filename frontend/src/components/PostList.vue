@@ -3,7 +3,7 @@
     <!-- Main title bar -->
     <div class="bg-blue-500 p-4 mb-4">
       <div class="container mx-auto">
-        <h1 class="text-2xl font-bold text-white">Travel Posts</h1>
+        <h1 class="text-2xl font-bold text-white">Ceļojumu ieraksti</h1>
       </div>
     </div>
 
@@ -12,15 +12,15 @@
       <div class="container mx-auto flex justify-between items-center">
         <div class="space-x-4">
           <button @click="viewMode = 'all'" :class="{'font-bold': viewMode === 'all'}" class="text-blue-600 hover:text-blue-800">
-            View All
+            Skatīt visus
           </button>
           <button v-if="isLoggedIn" @click="viewMode = 'my'" :class="{'font-bold': viewMode === 'my'}" class="text-blue-600 hover:text-blue-800">
-            My Posts
+            Mani ieraksti
           </button>
         </div>
         <div v-if="isLoggedIn" class="mb-4">
           <button @click="showCreatePostForm = !showCreatePostForm" class="bg-blue-500 text-white px-4 py-2 rounded">
-            {{ showCreatePostForm ? 'Cancel' : 'Create New Post' }}
+            {{ showCreatePostForm ? 'Atcelt' : 'Izveidot jaunu ierakstu' }}
           </button>
         </div>
       </div>
@@ -37,13 +37,13 @@
     <div class="container mx-auto">
       <div v-for="post in filteredPosts" :key="post._id" class="mb-4 p-4 border rounded shadow-md">
         <h3 class="text-xl font-semibold">{{ post.title }}</h3>
-        <p class="text-sm text-gray-600">By {{ post.user?.username || 'Unknown User' }} | Country: {{ post.country.name }}</p>
+        <p class="text-sm text-gray-600">Autors: {{ post.user?.username || 'Nezināms lietotājs' }} | Valsts: {{ getCountryDisplayName(post.country) }}</p>
         <div class="flex items-center mt-2">
           <span class="text-yellow-500 mr-1">★</span>
           <span>{{ post.rating }}/5</span>
         </div>
         <p class="mt-2">{{ post.content.substring(0, 100) }}...</p>
-        <router-link :to="{ name: 'PostDetail', params: { id: post._id } }" class="mt-2 inline-block text-blue-500 hover:underline">Read more</router-link>
+        <router-link :to="{ name: 'PostDetail', params: { id: post._id } }" class="mt-2 inline-block text-blue-500 hover:underline">Lasīt vairāk</router-link>
       </div>
     </div>
   </div>
@@ -54,6 +54,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useStore } from 'vuex';
 import CreatePost from './CreatePost.vue';
+import { getCountryDisplayName } from '../utils/countryLabels';
 
 export default {
   name: 'PostList',
@@ -83,7 +84,7 @@ export default {
         const response = await axios.get('http://localhost:3000/api/posts');
         posts.value = response.data;
       } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error('Kļūda, ielādējot ierakstus:', error);
       }
     };
 
@@ -108,7 +109,8 @@ export default {
       isLoggedIn,
       viewMode,
       filteredPosts,
-      handlePostCreated
+      handlePostCreated,
+      getCountryDisplayName
     };
   }
 }

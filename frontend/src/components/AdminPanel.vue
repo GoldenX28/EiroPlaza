@@ -1,15 +1,15 @@
 <template>
   <div class="admin-panel p-6 bg-white rounded-lg shadow">
-    <h2 class="text-2xl font-bold mb-4">User Management</h2>
-    <div v-if="loading" class="text-center">Loading users...</div>
+    <h2 class="text-2xl font-bold mb-4">Lietotāju pārvaldība</h2>
+    <div v-if="loading" class="text-center">Notiek lietotāju ielāde...</div>
     <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
     <table v-else class="w-full">
       <thead>
         <tr>
-          <th class="text-left">Username</th>
-          <th class="text-left">Email</th>
-          <th class="text-left">Role</th>
-          <th class="text-left">Actions</th>
+          <th class="text-left">Lietotājvārds</th>
+          <th class="text-left">E-pasts</th>
+          <th class="text-left">Loma</th>
+          <th class="text-left">Darbības</th>
         </tr>
       </thead>
       <tbody>
@@ -23,8 +23,8 @@
               class="border rounded p-1"
               :disabled="user.role === 'admin'"
             >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user">Lietotājs</option>
+              <option value="admin">Administrators</option>
             </select>
           </td>
           <td>
@@ -32,14 +32,14 @@
               @click="editUser(user)" 
               class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mr-2"
             >
-              Edit
+              Rediģēt
             </button>
             <button 
               @click="deleteUser(user._id)" 
               class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
               :disabled="user.role === 'admin'"
             >
-              Delete
+              Dzēst
             </button>
           </td>
         </tr>
@@ -49,35 +49,35 @@
     <!-- User Edit Modal -->
     <div v-if="showEditModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <h3 class="text-lg font-bold mb-4">Edit User</h3>
+        <h3 class="text-lg font-bold mb-4">Rediģēt lietotāju</h3>
         <form @submit.prevent="saveUserEdit">
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
-              Username
+              Lietotājvārds
             </label>
             <input v-model="editingUser.username" id="username" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-              Email
+              E-pasts
             </label>
             <input v-model="editingUser.email" id="email" type="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="role">
-              Role
+              Loma
             </label>
             <select v-model="editingUser.role" id="role" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
+              <option value="user">Lietotājs</option>
+              <option value="admin">Administrators</option>
             </select>
           </div>
           <div class="flex items-center justify-between">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-              Save Changes
+              Saglabāt izmaiņas
             </button>
             <button @click="closeEditModal" type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-              Cancel
+              Atcelt
             </button>
           </div>
         </form>
@@ -89,7 +89,7 @@
         @click="toggleInquiriesLog" 
         class="text-2xl font-bold mb-4 flex items-center"
       >
-        <span>Inquiries Log</span>
+        <span>Pieprasījumu žurnāls</span>
         <svg 
           :class="{'rotate-180': showInquiriesLog}"
           class="w-6 h-6 ml-2 transition-transform duration-200" 
@@ -104,19 +104,19 @@
       
       <transition name="fade">
         <div v-if="showInquiriesLog">
-          <div v-if="loadingInquiries" class="text-center">Loading inquiries...</div>
+          <div v-if="loadingInquiries" class="text-center">Notiek pieprasījumu ielāde...</div>
           <div v-if="inquiriesError" class="text-red-500 mb-4">{{ inquiriesError }}</div>
           <table v-else class="w-full">
             <thead>
               <tr>
-                <th class="text-left">User</th>
-                <th class="text-left">Message</th>
-                <th class="text-left">Date</th>
+                <th class="text-left">Lietotājs</th>
+                <th class="text-left">Ziņojums</th>
+                <th class="text-left">Datums</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="inquiry in inquiries" :key="inquiry._id" class="border-b">
-                <td>{{ inquiry.userId?.username || 'Unknown User' }}</td>
+                <td>{{ inquiry.userId?.username || 'Nezināms lietotājs' }}</td>
                 <td>{{ inquiry.message }}</td>
                 <td>{{ formatDate(inquiry.createdAt) }}</td>
               </tr>
@@ -157,8 +157,8 @@ export default {
         });
         users.value = response.data;
       } catch (err) {
-        console.error('Error fetching users:', err);
-        error.value = 'Failed to fetch users. Please try again.';
+        console.error('Kļūda, ielādējot lietotājus:', err);
+        error.value = 'Neizdevās ielādēt lietotājus. Lūdzu, mēģini vēlreiz.';
       } finally {
         loading.value = false;
       }
@@ -167,14 +167,14 @@ export default {
     const updateUser = async (user) => {
       if (user.role === 'admin') {
         user.role = 'admin';
-        alert("Admin roles cannot be changed.");
+        alert('Administratora lomu nevar mainīt.');
         return;
       }
       try {
         await axios.put(`http://localhost:3000/api/admin/users/${user._id}`, { role: user.role });
-        console.log('User updated successfully');
+        console.log('Lietotājs veiksmīgi atjaunināts');
       } catch (error) {
-        console.error('Error updating user:', error);
+        console.error('Kļūda, atjauninot lietotāju:', error);
       }
     };
 
@@ -202,25 +202,25 @@ export default {
           users.value[index] = { ...editingUser.value };
         }
         closeEditModal();
-        console.log('User edited successfully');
+        console.log('Lietotājs veiksmīgi rediģēts');
       } catch (error) {
-        console.error('Error editing user:', error);
+        console.error('Kļūda, rediģējot lietotāju:', error);
       }
     };
 
     const deleteUser = async (userId) => {
       const user = users.value.find(u => u._id === userId);
       if (user && user.role === 'admin') {
-        alert("Admin users cannot be deleted.");
+        alert('Administratoru lietotājus nevar dzēst.');
         return;
       }
-      if (confirm('Are you sure you want to delete this user?')) {
+      if (confirm('Vai tiešām vēlies dzēst šo lietotāju?')) {
         try {
           await axios.delete(`http://localhost:3000/api/admin/users/${userId}`);
           users.value = users.value.filter(user => user._id !== userId);
-          console.log('User deleted successfully');
+          console.log('Lietotājs veiksmīgi dzēsts');
         } catch (error) {
-          console.error('Error deleting user:', error);
+          console.error('Kļūda, dzēšot lietotāju:', error);
         }
       }
     };
@@ -236,11 +236,11 @@ export default {
         });
         inquiries.value = response.data.map(inquiry => ({
           ...inquiry,
-          userId: inquiry.userId || { username: 'Unknown User' }
+          userId: inquiry.userId || { username: 'Nezināms lietotājs' }
         }));
       } catch (err) {
-        console.error('Error fetching inquiries:', err);
-        inquiriesError.value = 'Failed to fetch inquiries. Please try again.';
+        console.error('Kļūda, ielādējot pieprasījumus:', err);
+        inquiriesError.value = 'Neizdevās ielādēt pieprasījumus. Lūdzu, mēģini vēlreiz.';
       } finally {
         loadingInquiries.value = false;
       }
@@ -254,7 +254,7 @@ export default {
     };
 
     const formatDate = (dateString) => {
-      if (!dateString) return 'Unknown Date';
+      if (!dateString) return 'Nezināms datums';
       return new Date(dateString).toLocaleString();
     };
 

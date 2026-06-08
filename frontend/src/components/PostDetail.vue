@@ -9,13 +9,13 @@
             @click="deletePost" 
             class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
-            Delete Post
+            Dzēst ierakstu
           </button>
         </div>
         
         <div class="flex items-center mb-4 text-sm text-gray-600">
-          <span class="mr-4">By {{ getUserName(post.user) }}</span>
-          <span class="mr-4">Country: {{ getCountryName(post.country) }}</span>
+          <span class="mr-4">Autors: {{ getUserName(post.user) }}</span>
+          <span class="mr-4">Valsts: {{ getCountryName(post.country) }}</span>
           <div class="flex items-center">
             <span class="text-yellow-500 mr-1">★</span>
             <span>{{ post.rating }}/5</span>
@@ -24,7 +24,7 @@
         
         <div v-if="post.images && post.images.length > 0" class="image-container my-6">
           <div v-for="image in post.images" :key="image" class="image-wrapper">
-            <img :src="getImageUrl(image)" alt="Post image" class="post-image">
+            <img :src="getImageUrl(image)" alt="Ieraksta attēls" class="post-image">
           </div>
         </div>
         
@@ -36,9 +36,9 @@
     
     <div class="bg-white shadow-lg rounded-lg overflow-hidden">
       <div class="p-6">
-        <h3 class="text-2xl font-semibold mb-4 text-gray-800">Comments</h3>
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800">Komentāri</h3>
         <div v-if="!post.comments || post.comments.length === 0" class="text-gray-500 italic mb-4">
-          No comments yet. Be the first to comment!
+          Vēl nav komentāru. Esi pirmais, kas komentē!
         </div>
         <div v-else class="space-y-4 mb-6">
           <div v-for="comment in post.comments" :key="comment._id" class="bg-gray-100 rounded-lg p-4">
@@ -55,20 +55,20 @@
             v-model="newComment" 
             rows="3" 
             class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-            placeholder="Add a comment..."
+            placeholder="Pievieno komentāru..."
           ></textarea>
           <button 
             type="submit" 
             class="mt-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
           >
-            Submit Comment
+            Nosūtīt komentāru
           </button>
         </form>
       </div>
     </div>
   </div>
   <div v-else class="text-center p-6">
-    Loading post...
+    Notiek ieraksta ielāde...
   </div>
 </template>
 
@@ -77,6 +77,7 @@ import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import { getCountryDisplayName } from '../utils/countryLabels';
 
 export default {
   name: 'PostDetail',
@@ -92,7 +93,7 @@ export default {
         const response = await axios.get(`http://localhost:3000/api/posts/${route.params.id}`);
         post.value = response.data;
       } catch (error) {
-        console.error('Error fetching post:', error);
+        console.error('Kļūda, ielādējot ierakstu:', error);
       }
     };
 
@@ -107,12 +108,12 @@ export default {
         post.value = response.data;
         newComment.value = '';
       } catch (error) {
-        console.error('Error adding comment:', error);
+        console.error('Kļūda, pievienojot komentāru:', error);
       }
     };
 
     const deletePost = async () => {
-      if (confirm('Are you sure you want to delete this post?')) {
+      if (confirm('Vai tiešām vēlies dzēst šo ierakstu?')) {
         try {
           const token = localStorage.getItem('token');
           await axios.delete(`http://localhost:3000/api/posts/${route.params.id}`, {
@@ -120,8 +121,8 @@ export default {
           });
           router.push('/posts');
         } catch (error) {
-          console.error('Error deleting post:', error);
-          alert('Failed to delete post. ' + (error.response?.data?.message || 'Please try again.'));
+          console.error('Kļūda, dzēšot ierakstu:', error);
+          alert('Neizdevās dzēst ierakstu. ' + (error.response?.data?.message || 'Lūdzu, mēģini vēlreiz.'));
         }
       }
     };
@@ -140,11 +141,11 @@ export default {
     };
 
     const getUserName = (user) => {
-      return user && user.username ? user.username : 'Unknown User';
+      return user && user.username ? user.username : 'Nezināms lietotājs';
     };
 
     const getCountryName = (country) => {
-      return country && country.name ? country.name : 'Unknown Country';
+      return getCountryDisplayName(country);
     };
 
     const getImageUrl = (imagePath) => {

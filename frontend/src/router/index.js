@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../components/HomePage.vue'
 import CountryDetails from '../components/CountryDetails.vue'
+import CountryMapPage from '../components/CountryMapPage.vue'
+import CountryComparator from '../components/CountryComparator.vue'
 import AboutPage from '@/components/AboutPage.vue'
 import ContactPage from '@/components/ContactPage.vue'
 import RegisterForm from '@/components/Register.vue' 
@@ -21,6 +23,16 @@ const routes = [
     path: '/country/:id',
     name: 'CountryDetails',
     component: CountryDetails
+  },
+  {
+    path: '/country/:id/map',
+    name: 'CountryMapPage',
+    component: CountryMapPage
+  },
+  {
+    path: '/compare',
+    name: 'CountryComparator',
+    component: CountryComparator
   },
   {
     path: '/about',

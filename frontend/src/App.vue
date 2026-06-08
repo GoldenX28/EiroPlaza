@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <div class="bg-blue-500 p-4 flex items-center justify-center">
+  <div id="app" class="app-shell">
+    <div class="app-topbar">
       <NavBar />
     </div>
     <router-view></router-view>
@@ -20,29 +20,29 @@ export default {
     const isLoggedIn = ref(false)
     
     const login = () => {
-      console.log('Login called')
+      console.log('Pieteikšanās izsaukta')
       isLoggedIn.value = true
       localStorage.setItem('isLoggedIn', 'true')
-      console.log('isLoggedIn after login:', isLoggedIn.value)
+      console.log('isLoggedIn pēc pieteikšanās:', isLoggedIn.value)
     }
 
     const logout = () => {
-      console.log('Logout called')
+      console.log('Izrakstīšanās izsaukta')
       isLoggedIn.value = false
       localStorage.removeItem('isLoggedIn')
       localStorage.removeItem('token')
-      console.log('isLoggedIn after logout:', isLoggedIn.value)
+      console.log('isLoggedIn pēc izrakstīšanās:', isLoggedIn.value)
     }
 
     onMounted(() => {
-      console.log('App mounted')
+      console.log('Lietotne ir ielādēta')
       if (localStorage.getItem('isLoggedIn') === 'true') {
         isLoggedIn.value = true
-        console.log('User was previously logged in')
+        console.log('Lietotājs iepriekš bija pieslēdzies')
       } else {
-        console.log('User was not previously logged in')
+        console.log('Lietotājs iepriekš nebija pieslēdzies')
       }
-      console.log('Initial isLoggedIn state:', isLoggedIn.value)
+      console.log('Sākotnējais isLoggedIn stāvoklis:', isLoggedIn.value)
     })
 
     provide('auth', {
@@ -61,7 +61,18 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 28%, #f8fafc 100%);
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(16px);
 }
 </style>

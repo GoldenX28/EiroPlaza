@@ -1,13 +1,15 @@
 import express from 'express';
 import Country from '../models/Country.js';
 import Guest from '../models/Guest.js';
+import { ensureCountriesAvailable, normalizeCountryPayload, syncCountriesFromRestCountries } from '../services/restCountries.js';
 
 const router = express.Router();
 
 // Get all countries
 router.get('/', async (req, res) => {
   try {
-    const countries = await Country.find();
+    await ensureCountriesAvailable(Country);
+    const countries = await Country.find().sort({ name: 1 });
     res.json(countries);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching countries', error: err.message });
@@ -17,6 +19,8 @@ router.get('/', async (req, res) => {
 // Search countries route
 router.get('/search', async (req, res) => {
   try {
+    await ensureCountriesAvailable(Country);
+
     const { query, isCompleteSearch } = req.query;
     if (!query) {
       return res.status(400).json({ message: 'Search query is required' });
@@ -27,9 +31,12 @@ router.get('/search', async (req, res) => {
       $or: [
         { name: { $regex: query, $options: 'i' } },
         { capital: { $regex: query, $options: 'i' } },
-        { continent: { $regex: query, $options: 'i' } }
+        { continent: { $regex: query, $options: 'i' } },
+        { region: { $regex: query, $options: 'i' } },
+        { subregion: { $regex: query, $options: 'i' } },
+        { 'currency.name': { $regex: query, $options: 'i' } }
       ]
-    });
+    }).sort({ name: 1 });
 
     // Log the search query for the guest only if it's a complete search
     if (req.guestId && isCompleteSearch === 'true') {
@@ -50,9 +57,19 @@ router.get('/search', async (req, res) => {
   }
 });
 
+router.post('/sync', async (req, res) => {
+  try {
+    const countries = await syncCountriesFromRestCountries(Country, { force: true });
+    res.json({ message: 'Countries synchronized successfully', count: countries.length });
+  } catch (err) {
+    res.status(500).json({ message: 'Error syncing countries', error: err.message });
+  }
+});
+
 // Get one country
 router.get('/:id', async (req, res) => {
   try {
+    await ensureCountriesAvailable(Country);
     const country = await Country.findById(req.params.id);
     if (!country) {
       return res.status(404).json({ message: 'Country not found' });
@@ -65,13 +82,7 @@ router.get('/:id', async (req, res) => {
 
 // Add a new country
 router.post('/', async (req, res) => {
-  const country = new Country({
-    name: req.body.name,
-    capital: req.body.capital,
-    population: req.body.population,
-    languages: req.body.languages,
-    timezone: req.body.timezone
-  });
+  const country = new Country(normalizeCountryPayload(req.body));
 
   try {
     const newCountry = await country.save();
@@ -88,8 +99,7 @@ router.patch('/:id', async (req, res) => {
     if (!country) {
       return res.status(404).json({ message: 'Country not found' });
     }
-
-    Object.assign(country, req.body);
+    Object.assign(country, normalizeCountryPayload({ ...country.toObject(), ...req.body }));
     const updatedCountry = await country.save();
     res.json(updatedCountry);
   } catch (err) {

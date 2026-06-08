@@ -1,21 +1,21 @@
 <template>
   <div v-if="isAdmin" class="db-health-check bg-gray-100 p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Database Health Check</h2>
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Datubāzes stāvokļa pārbaude</h2>
     <button @click="checkDbHealth" class="mb-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-      Check Database Health
+      Pārbaudīt datubāzi
     </button>
-    <div v-if="loading" class="text-gray-600">Checking database health...</div>
+    <div v-if="loading" class="text-gray-600">Notiek datubāzes pārbaude...</div>
     <div v-else-if="error" class="text-red-600">{{ error }}</div>
     <div v-else-if="dbStatus" class="space-y-4">
       <div v-for="(status, dbName) in dbStatus" :key="dbName" class="bg-white p-4 rounded-md shadow">
-        <h3 class="font-semibold text-lg mb-2 capitalize">{{ dbName }} Database:</h3>
+        <h3 class="font-semibold text-lg mb-2 capitalize">{{ dbName }} datubāze:</h3>
         <p class="mb-1">
-          Connection: 
+          Savienojums: 
           <span :class="status.connected ? 'text-green-600' : 'text-red-600'">
-            {{ status.connected ? 'Connected' : 'Not Connected' }}
+            {{ status.connected ? 'Savienots' : 'Nav savienots' }}
           </span>
         </p>
-        <p v-if="status.error" class="text-red-600">Error: {{ status.error }}</p>
+        <p v-if="status.error" class="text-red-600">Kļūda: {{ status.error }}</p>
       </div>
     </div>
   </div>
@@ -43,11 +43,11 @@ export default {
 
       try {
         const response = await axios.get('http://localhost:3000/api/db-health');
-        console.log('DB Health Check Response:', response.data);
+        console.log('Datubāzes pārbaudes atbilde:', response.data);
         dbStatus.value = response.data;
       } catch (err) {
-        console.error('Error checking database health:', err);
-        error.value = 'Failed to check database health';
+        console.error('Kļūda, pārbaudot datubāzes stāvokli:', err);
+        error.value = 'Neizdevās pārbaudīt datubāzi';
       } finally {
         loading.value = false;
       }

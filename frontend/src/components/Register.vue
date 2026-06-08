@@ -1,31 +1,44 @@
 <template>
-  <div class="register-page min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Register</h1>
-      <form @submit.prevent="register" class="space-y-6">
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-          <input v-model="username" id="username" type="text" placeholder="Enter your username" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+  <div class="register-page min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
+    <div class="w-full max-w-4xl bg-transparent px-4 py-10">
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+        <div class="hidden lg:flex items-center justify-center bg-sky-600 p-8">
+          <div class="text-white text-center max-w-xs">
+            <h2 class="text-3xl font-extrabold mb-2">Pievienojies EiroPlaza</h2>
+            <p class="text-sm opacity-90">Izveido kontu, saglabā savus favorītus un saņem personalizētus ieteikumus par valstīm un ziņām.</p>
+          </div>
         </div>
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <input v-model="email" id="email" type="email" placeholder="Enter your email" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        <div class="p-8 lg:p-10">
+          <h1 class="text-2xl font-bold text-gray-800 mb-4">Reģistrācija</h1>
+          <form @submit.prevent="register" class="space-y-4">
+            <div>
+              <label for="username" class="block text-sm font-medium text-gray-700">Lietotājvārds</label>
+              <input v-model="username" id="username" type="text" placeholder="piemers" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300">
+            </div>
+
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700">E-pasts</label>
+              <input v-model="email" id="email" type="email" placeholder="piemers@epasts.lv" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300">
+            </div>
+
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700">Parole</label>
+              <div class="mt-1 relative">
+                <input :type="showPassword ? 'text' : 'password'" v-model="password" id="password" placeholder="Ievadi savu paroli" required class="block w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300 pr-10">
+                <button type="button" @click="showPassword = !showPassword" class="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500 hover:text-gray-700">{{ showPassword ? 'Slēpt' : 'Rādīt' }}</button>
+              </div>
+              <p class="mt-2 text-xs text-gray-500">Parolei jābūt vismaz 8 rakstzīmju garai.</p>
+            </div>
+
+            <div>
+              <button type="submit" class="w-full inline-flex items-center justify-center py-2 px-4 rounded-lg bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-semibold hover:opacity-95 transition">Reģistrēties</button>
+            </div>
+          </form>
+
+          <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
+          <p class="mt-6 text-center text-sm text-gray-600">Jau ir konts? <router-link to="/login" class="font-medium text-sky-600 hover:text-sky-500">Pieslēgties</router-link></p>
         </div>
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input v-model="password" id="password" type="password" placeholder="Enter your password" required class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
-          Register
-        </button>
-      </form>
-      <p v-if="error" class="mt-4 text-center text-sm text-red-600">{{ error }}</p>
-      <p class="mt-4 text-center text-sm text-gray-600">
-        Already have an account? 
-        <router-link to="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
-          Log in
-        </router-link>
-      </p>
+      </div>
     </div>
   </div>
 </template>
@@ -40,31 +53,36 @@ export default {
       username: '',
       email: '',
       password: '',
-      error: null
+      error: null,
+      showPassword: false
     }
   },
   methods: {
     async register() {
+      this.error = null;
+      if (!this.username || !this.email || !this.password) {
+        this.error = 'Lūdzu, aizpildi visus laukus.';
+        return;
+      }
+      if (this.password.length < 8) {
+        this.error = 'Parolei jābūt vismaz 8 rakstzīmju garai.';
+        return;
+      }
+
       try {
-        console.log('Attempting registration with:', { username: this.username, email: this.email });
-        const response = await axios.post('http://localhost:3000/api/auth/register', {
+        await axios.post('http://localhost:3000/api/auth/register', {
           username: this.username,
           email: this.email,
           password: this.password
         });
-        console.log('Registration response:', response.data);
         this.$router.push('/login');
       } catch (error) {
-        console.error('Registration error:', error);
         if (error.response) {
-          console.error('Error response:', error.response.data);
-          this.error = error.response.data.message || 'Registration failed';
+          this.error = error.response.data.message || 'Reģistrācija neizdevās';
         } else if (error.request) {
-          console.error('No response received:', error.request);
-          this.error = 'No response from server. Please try again.';
+          this.error = 'Nav atbildes no servera. Lūdzu, mēģini vēlreiz.';
         } else {
-          console.error('Error setting up request:', error.message);
-          this.error = 'An unexpected error occurred. Please try again.';
+          this.error = 'Radās negaidīta kļūda. Lūdzu, mēģini vēlreiz.';
         }
       }
     }

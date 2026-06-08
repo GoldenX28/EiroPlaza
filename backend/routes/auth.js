@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
+import Country from '../models/Country.js';
 import jwt from 'jsonwebtoken';
 import { authenticateUser } from '../middleware/auth.js';
 
@@ -77,7 +78,8 @@ router.post('/login', async (req, res) => {
         _id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        favoriteCountries: user.favoriteCountries || []
       }
     });
   } catch (error) {
@@ -96,6 +98,7 @@ router.get('/profile', authenticateUser, async (req, res) => {
     res.json({
       username: user.username,
       email: user.email,
+      favoriteCountries: user.favoriteCountries || [],
       createdAt: user.createdAt // Include the createdAt field
     });
   } catch (error) {
@@ -131,8 +134,57 @@ router.get('/me', authenticateUser, (req, res) => {
     id: req.user._id,
     username: req.user.username,
     email: req.user.email,
-    role: req.user.role
+    role: req.user.role,
+    favoriteCountries: req.user.favoriteCountries || []
   });
+});
+
+router.post('/favorites/:countryId', authenticateUser, async (req, res) => {
+  try {
+    const { countryId } = req.params;
+
+    const countryExists = await Country.exists({ _id: countryId });
+    if (!countryExists) {
+      return res.status(404).json({ message: 'Country not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isFavorite = user.favoriteCountries.some((favoriteId) => String(favoriteId) === String(countryId));
+
+    if (isFavorite) {
+      user.favoriteCountries = user.favoriteCountries.filter((favoriteId) => String(favoriteId) !== String(countryId));
+    } else {
+      user.favoriteCountries.push(countryId);
+    }
+
+    await user.save();
+
+    res.json({
+      message: isFavorite ? 'Removed from favorites' : 'Added to favorites',
+      favoriteCountries: user.favoriteCountries
+    });
+  } catch (error) {
+    console.error('Error toggling favorite country:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.get('/favorites', authenticateUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('favoriteCountries');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ favoriteCountries: user.favoriteCountries || [] });
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 });
 
 export default router;

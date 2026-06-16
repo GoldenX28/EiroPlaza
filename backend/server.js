@@ -36,11 +36,15 @@ async function bootstrap() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    try {
-      await syncCountriesFromRestCountries(Country, { force: true });
-      console.log('Countries synchronized from REST Countries API');
-    } catch (syncError) {
-      console.error('REST Countries sync failed:', syncError);
+    if (process.env.REST_COUNTRIES_API_KEY) {
+      try {
+        await syncCountriesFromRestCountries(Country);
+        console.log('Countries synchronized from REST Countries API');
+      } catch (syncError) {
+        console.error('REST Countries sync failed:', syncError);
+      }
+    } else {
+      console.warn('Skipping REST Countries sync because REST_COUNTRIES_API_KEY is not set.');
     }
 
     app.listen(port, () => {

@@ -4,6 +4,24 @@ const cache = new Map();
 
 const normalizeText = (value) => String(value || '').trim();
 
+const getByPath = (source, path) => {
+  if (!source || !path) {
+    return undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(source, path)) {
+    return source[path];
+  }
+
+  return path.split('.').reduce((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return current[key];
+    }
+
+    return undefined;
+  }, source);
+};
+
 const parseGoogleTranslateResponse = (payload) => {
   if (!Array.isArray(payload)) {
     return '';
@@ -51,9 +69,9 @@ export const translateToLatvian = async (text) => {
 };
 
 export const translateCountryFieldsToLatvian = async (country = {}) => {
-  const translatedCommon = country?.translations?.lav?.common || country?.translations?.lv?.common || await translateToLatvian(country?.name?.common || country?.name?.official || country?.name || '');
-  const translatedOfficial = country?.translations?.lav?.official || country?.translations?.lv?.official || await translateToLatvian(country?.name?.official || country?.name?.common || country?.name || '');
-  const translatedFlagAlt = country?.translations?.lav?.alt || country?.translations?.lv?.alt || await translateToLatvian(country?.flags?.alt || '');
+  const translatedCommon = getByPath(country, 'translations.lav.common') || getByPath(country, 'translations.lv.common') || await translateToLatvian(getByPath(country, 'names.common') || getByPath(country, 'name.common') || getByPath(country, 'names.official') || getByPath(country, 'name.official') || getByPath(country, 'name') || '');
+  const translatedOfficial = getByPath(country, 'translations.lav.official') || getByPath(country, 'translations.lv.official') || await translateToLatvian(getByPath(country, 'names.official') || getByPath(country, 'name.official') || getByPath(country, 'names.common') || getByPath(country, 'name.common') || getByPath(country, 'name') || '');
+  const translatedFlagAlt = getByPath(country, 'translations.lav.alt') || getByPath(country, 'translations.lv.alt') || await translateToLatvian(getByPath(country, 'flag.description') || getByPath(country, 'flags.alt') || '');
 
   return {
     common: translatedCommon,

@@ -1,9 +1,127 @@
-const REST_COUNTRIES_ENDPOINT = 'https://restcountries.com/v3.1/region/europe';
+const REST_COUNTRIES_ENDPOINT = 'https://api.restcountries.com/countries/v5/region/Europe?limit=100';
 import { translateCountryFieldsToLatvian } from './translation.js';
 import tzlookup from 'tz-lookup';
 import { DateTime } from 'luxon';
 
 const stripDiacritics = (value) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+const getByPath = (source, path) => {
+  if (!source || !path) {
+    return undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(source, path)) {
+    return source[path];
+  }
+
+  return path.split('.').reduce((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return current[key];
+    }
+
+    return undefined;
+  }, source);
+};
+
+const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== '');
+
+const asStringArray = (value, mapper = (item) => item) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(mapper)
+    .map((item) => (typeof item === 'string' ? item.trim() : String(item || '').trim()))
+    .filter(Boolean);
+};
+
+const readCoordinates = (country, key) => {
+  const raw = getByPath(country, key);
+
+  if (Array.isArray(raw) && raw.length >= 2) {
+    return raw.slice(0, 2).map((value) => Number(value));
+  }
+
+  const latitude = getByPath(raw, 'lat');
+  const longitude = getByPath(raw, 'lng');
+
+  if (latitude !== undefined && longitude !== undefined) {
+    return [Number(latitude), Number(longitude)];
+  }
+
+  return [];
+};
+
+const readCapital = (country) => {
+  const capitals = getByPath(country, 'capitals');
+
+  if (Array.isArray(capitals) && capitals.length > 0) {
+    const firstCapital = capitals[0];
+    if (typeof firstCapital === 'string') {
+      return firstCapital;
+    }
+
+    return firstValue(firstCapital?.name, firstCapital?.common, firstCapital?.official, firstCapital?.label, 'Nav pieejama');
+  }
+
+  return firstValue(getByPath(country, 'capital'), 'Nav pieejama');
+};
+
+const readLanguages = (country) => {
+  const languages = getByPath(country, 'languages');
+
+  if (!Array.isArray(languages)) {
+    return [];
+  }
+
+  return languages
+    .map((language) => {
+      if (typeof language === 'string') {
+        return language;
+      }
+
+      return firstValue(language?.name, language?.english_name, language?.native_name, language?.common, language?.official, language?.language, language?.value, '');
+    })
+    .filter(Boolean);
+};
+
+const readCurrencies = (country) => {
+  const currencies = getByPath(country, 'currencies');
+
+  if (!currencies || typeof currencies !== 'object' || Array.isArray(currencies)) {
+    return { name: '', code: '' };
+  }
+
+  const [currencyCode, currencyData] = Object.entries(currencies)[0] || [];
+  return {
+    name: firstValue(currencyData?.name, currencyData?.label, ''),
+    code: firstValue(currencyCode, currencyData?.code, '')
+  };
+};
+
+const readFlag = (country) => {
+  const svg = firstValue(getByPath(country, 'flag.url_svg'), getByPath(country, 'flag.svg'), getByPath(country, 'flags.svg'), '');
+  const png = firstValue(getByPath(country, 'flag.url_png'), getByPath(country, 'flag.png'), getByPath(country, 'flags.png'), '');
+  const alt = firstValue(getByPath(country, 'flag.description'), getByPath(country, 'flag.alt'), getByPath(country, 'flags.alt'), '');
+
+  return { svg, png, alt };
+};
+
+const readTranslations = async (country) => {
+  const existingTranslations = getByPath(country, 'names.translations') || getByPath(country, 'translations') || {};
+  const latvianTranslations = await translateCountryFieldsToLatvian(country);
+
+  return {
+    ...existingTranslations,
+    lav: {
+      ...existingTranslations.lav,
+      common: getByPath(existingTranslations, 'lav.common') || getByPath(existingTranslations, 'lv.common') || latvianTranslations.common,
+      official: getByPath(existingTranslations, 'lav.official') || getByPath(existingTranslations, 'lv.official') || latvianTranslations.official,
+      alt: getByPath(existingTranslations, 'lav.alt') || getByPath(existingTranslations, 'lv.alt') || latvianTranslations.alt
+    }
+  };
+};
 
 const createFallbackCode = (name) => {
   const normalized = stripDiacritics(name || '')
@@ -15,30 +133,33 @@ const createFallbackCode = (name) => {
 };
 
 const normalizeCountry = async (country) => {
-  const languages = country.languages ? Object.values(country.languages) : [];
-  const currencyEntries = country.currencies ? Object.entries(country.currencies) : [];
-  const [currencyCode, currencyData] = currencyEntries[0] || [];
-  const name = country?.name?.common || country?.name?.official || 'Nezināma valsts';
-  const translations = country.translations || {};
-  const latvianTranslations = await translateCountryFieldsToLatvian(country);
+  const name = firstValue(getByPath(country, 'names.common'), getByPath(country, 'name.common'), getByPath(country, 'name'), 'Nezināma valsts');
+  const officialName = firstValue(getByPath(country, 'names.official'), getByPath(country, 'name.official'), getByPath(country, 'officialName'), '');
+  const flag = readFlag(country);
+  const coordinates = readCoordinates(country, 'coordinates');
+  const capitalCoordinates = readCoordinates(country, 'capitals.0.coordinates');
+  const translations = await readTranslations(country);
+  const currencies = readCurrencies(country);
+  const sovereign = getByPath(country, 'classification.sovereign');
+  const unMember = getByPath(country, 'classification.un_member');
 
   return {
-    code: country.cca3 || createFallbackCode(name),
-    cca2: country.cca2 || '',
-    ccn3: country.ccn3 || '',
-    cioc: country.cioc || '',
+    code: firstValue(getByPath(country, 'codes.alpha_3'), getByPath(country, 'codes.alpha_2'), createFallbackCode(name)),
+    cca2: firstValue(getByPath(country, 'codes.alpha_2'), ''),
+    ccn3: firstValue(getByPath(country, 'codes.ccn3'), ''),
+    cioc: firstValue(getByPath(country, 'codes.cioc'), ''),
     name,
-    officialName: country?.name?.official || country?.name?.common || '',
-    capital: Array.isArray(country.capital) && country.capital.length > 0 ? country.capital[0] : 'Nav pieejama',
-    population: Number(country.population || 0),
-    languages,
-    timezone: Array.isArray(country.timezones) && country.timezones.length > 0 ? country.timezones[0] : 'Nav pieejama',
-    timezones: Array.isArray(country.timezones) ? country.timezones : [],
+    officialName,
+    capital: readCapital(country),
+    population: Number(firstValue(getByPath(country, 'population'), 0)),
+    languages: readLanguages(country),
+    timezone: asStringArray(firstValue(getByPath(country, 'timezones'), []))[0] || 'Nav pieejama',
+    timezones: asStringArray(getByPath(country, 'timezones')),
     primaryTimezone: (() => {
       try {
-        const latlng = Array.isArray(country?.capitalInfo?.latlng) && country.capitalInfo.latlng.length >= 2
-          ? country.capitalInfo.latlng
-          : (Array.isArray(country.latlng) && country.latlng.length >= 2 ? country.latlng : null);
+        const latlng = capitalCoordinates.length >= 2
+          ? capitalCoordinates
+          : (coordinates.length >= 2 ? coordinates : null);
 
         if (!latlng) return '';
         return tzlookup(latlng[0], latlng[1]);
@@ -48,9 +169,9 @@ const normalizeCountry = async (country) => {
     })(),
     primaryUtcOffset: (() => {
       try {
-        const latlng = Array.isArray(country?.capitalInfo?.latlng) && country.capitalInfo.latlng.length >= 2
-          ? country.capitalInfo.latlng
-          : (Array.isArray(country.latlng) && country.latlng.length >= 2 ? country.latlng : null);
+        const latlng = capitalCoordinates.length >= 2
+          ? capitalCoordinates
+          : (coordinates.length >= 2 ? coordinates : null);
 
         if (!latlng) return '';
         const derived = tzlookup(latlng[0], latlng[1]);
@@ -65,66 +186,71 @@ const normalizeCountry = async (country) => {
         return '';
       }
     })(),
-    continent: Array.isArray(country.continents) && country.continents.length > 0 ? country.continents[0] : country.region || '',
-    region: country.region || '',
-    subregion: country.subregion || '',
-    flag: country?.flags?.svg || country?.flags?.png || '',
+    continent: asStringArray(getByPath(country, 'continents'))[0] || firstValue(getByPath(country, 'region'), ''),
+    region: firstValue(getByPath(country, 'region'), ''),
+    subregion: firstValue(getByPath(country, 'subregion'), ''),
+    flag: firstValue(flag.svg, flag.png, ''),
     flags: {
-      png: country?.flags?.png || '',
-      svg: country?.flags?.svg || '',
-      alt: country?.flags?.alt || ''
+      png: flag.png,
+      svg: flag.svg,
+      alt: flag.alt
     },
     maps: {
-      googleMaps: country?.maps?.googleMaps || '',
-      openStreetMaps: country?.maps?.openStreetMaps || ''
+      googleMaps: firstValue(getByPath(country, 'links.google_maps'), getByPath(country, 'maps.googleMaps'), ''),
+      openStreetMaps: firstValue(getByPath(country, 'links.open_street_maps'), getByPath(country, 'maps.openStreetMaps'), '')
     },
     capitalInfo: {
-      latlng: Array.isArray(country?.capitalInfo?.latlng) ? country.capitalInfo.latlng : []
+      latlng: capitalCoordinates
     },
-    latlng: Array.isArray(country.latlng) ? country.latlng : [],
-    area: Number(country.area || 0),
-    borders: Array.isArray(country.borders) ? country.borders : [],
-    tld: Array.isArray(country.tld) ? country.tld : [],
-    altSpellings: Array.isArray(country.altSpellings) ? country.altSpellings : [],
-    independent: typeof country.independent === 'boolean' ? country.independent : null,
-    landlocked: typeof country.landlocked === 'boolean' ? country.landlocked : null,
-    status: country.status || '',
-    unMember: typeof country.unMember === 'boolean' ? country.unMember : null,
-    startOfWeek: country.startOfWeek || '',
-    fifa: country.fifa || '',
+    latlng: coordinates,
+    area: Number(firstValue(getByPath(country, 'area.kilometers'), getByPath(country, 'area'), 0)),
+    borders: asStringArray(getByPath(country, 'borders')),
+    tld: asStringArray(firstValue(getByPath(country, 'tlds'), getByPath(country, 'tld'), [])),
+    altSpellings: asStringArray(getByPath(country, 'names.alternates')),
+    independent: typeof sovereign === 'boolean' ? sovereign : null,
+    landlocked: typeof getByPath(country, 'landlocked') === 'boolean' ? getByPath(country, 'landlocked') : null,
+    status: firstValue(getByPath(country, 'classification.iso_status'), getByPath(country, 'status'), ''),
+    unMember: typeof unMember === 'boolean' ? unMember : null,
+    startOfWeek: firstValue(getByPath(country, 'date.start_of_week'), getByPath(country, 'startOfWeek'), ''),
+    fifa: firstValue(getByPath(country, 'codes.fifa'), getByPath(country, 'fifa'), ''),
     car: {
-      signs: Array.isArray(country?.car?.signs) ? country.car.signs : [],
-      side: country?.car?.side || ''
+      signs: asStringArray(firstValue(getByPath(country, 'cars.signs'), getByPath(country, 'car.signs'), [])),
+      side: firstValue(getByPath(country, 'cars.driving_side'), getByPath(country, 'car.side'), '')
     },
     coatOfArms: {
-      png: country?.coatOfArms?.png || '',
-      svg: country?.coatOfArms?.svg || ''
+      png: firstValue(getByPath(country, 'coatOfArms.png'), getByPath(country, 'coat_of_arms.png'), ''),
+      svg: firstValue(getByPath(country, 'coatOfArms.svg'), getByPath(country, 'coat_of_arms.svg'), '')
     },
-    gini: country.gini || {},
-    demonyms: country.demonyms || {},
-    translations: {
-      ...translations,
-      lav: {
-        ...translations.lav,
-        common: translations?.lav?.common || latvianTranslations.common,
-        official: translations?.lav?.official || latvianTranslations.official,
-        alt: translations?.lav?.alt || latvianTranslations.alt
-      }
+    gini: firstValue(getByPath(country, 'economy.gini_coefficient'), getByPath(country, 'gini'), {}),
+    demonyms: firstValue(getByPath(country, 'demonyms'), {}),
+    translations,
+    postalCode: {
+      format: firstValue(getByPath(country, 'postal_code.format'), getByPath(country, 'postalCode.format'), ''),
+      regex: firstValue(getByPath(country, 'postal_code.regex'), getByPath(country, 'postalCode.regex'), '')
     },
-    postalCode: country.postalCode || {},
     currency: currencyData ? {
-      name: currencyData.name || '',
-      code: currencyCode || ''
+      name: firstValue(currencyData.name, currencyData.label, ''),
+      code: firstValue(currencyCode, '')
     } : {
-      name: '',
-      code: ''
+      name: currencies.name,
+      code: currencies.code
     },
     rawData: country
   };
 };
 
 const fetchRestCountries = async () => {
-  const response = await fetch(REST_COUNTRIES_ENDPOINT);
+  const apiKey = process.env.REST_COUNTRIES_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('REST_COUNTRIES_API_KEY is not set. Add a REST Countries v5 API key to sync countries.');
+  }
+
+  const response = await fetch(REST_COUNTRIES_ENDPOINT, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`
+    }
+  });
 
   if (!response.ok) {
     throw new Error(`REST Countries API request failed with status ${response.status}`);
@@ -132,11 +258,13 @@ const fetchRestCountries = async () => {
 
   const data = await response.json();
 
-  if (!Array.isArray(data)) {
+  const countries = data?.data?.objects;
+
+  if (!Array.isArray(countries)) {
     throw new Error('REST Countries API returned an unexpected payload');
   }
 
-  return Promise.all(data.map(normalizeCountry));
+  return Promise.all(countries.map(normalizeCountry));
 };
 
 let syncPromise = null;

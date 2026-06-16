@@ -82,7 +82,7 @@ export default {
           password: password.value
         });
         if (response.data.token) {
-          if (remember.value) localStorage.setItem('token', response.data.token);
+          localStorage.setItem('token', response.data.token);
           store.dispatch('login', response.data.user);
           router.push('/');
         } else {

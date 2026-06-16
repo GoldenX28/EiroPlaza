@@ -5,8 +5,33 @@ import User from '../models/User.js';
 import Country from '../models/Country.js';
 import jwt from 'jsonwebtoken';
 import { authenticateUser } from '../middleware/auth.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+
+// Set up __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -108,7 +133,7 @@ router.get('/profile', authenticateUser, async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authenticateUser, async (req, res) => {
+router.put('/profile', authenticateUser, upload.single('avatar'), async (req, res) => {
   try {
     const { username, email } = req.body;
     const user = await User.findById(req.user.id);
@@ -119,6 +144,11 @@ router.put('/profile', authenticateUser, async (req, res) => {
 
     if (username) user.username = username;
     if (email) user.email = email;
+
+    if (req.file) {
+      // store path relative to server root so static serving works (/uploads/...)
+      user.avatar = `/uploads/${req.file.filename}`;
+    }
 
     await user.save();
     res.json({ message: 'Profile updated successfully', user });

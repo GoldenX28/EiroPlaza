@@ -37,7 +37,15 @@
       <section class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <article v-for="post in paginatedPosts" :key="post._id" class="post-card rounded-2xl bg-white p-5 shadow-lg">
           <div class="flex items-start gap-4">
-            <div class="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center text-xl font-semibold text-slate-700">{{ getInitials(post.title) }}</div>
+            <div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-xl font-semibold text-slate-700">
+              <img
+                v-if="post.user?.avatar"
+                :src="getImageUrl(post.user.avatar)"
+                alt="autora profils"
+                class="h-full w-full object-cover"
+              >
+              <span v-else>{{ getInitials(post.user?.username || post.title) }}</span>
+            </div>
             <div class="flex-1">
               <h3 class="text-lg font-bold text-slate-900">{{ post.title }}</h3>
               <p class="text-xs text-slate-500">Autors: {{ post.user?.username || 'Nezināms' }} • {{ getCountryDisplayName(post.country) }}</p>
@@ -179,6 +187,15 @@ export default {
       ).toUpperCase();
     };
 
+    const getImageUrl = (avatar) => {
+      const value = String(avatar || '').trim();
+      if (!value) return '';
+      if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/uploads/')) {
+        return value;
+      }
+      return `/uploads/${value.replace(/^\/+/, '')}`;
+    };
+
     const formatDate = (dateString) => {
       if (!dateString) return '';
       return new Date(dateString).toLocaleDateString();
@@ -204,6 +221,7 @@ export default {
       goToPage,
       rangeText,
       getInitials,
+      getImageUrl,
       formatDate
     };
   }

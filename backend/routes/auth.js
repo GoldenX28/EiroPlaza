@@ -104,6 +104,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        avatar: user.avatar || '',
         favoriteCountries: user.favoriteCountries || []
       }
     });
@@ -121,8 +122,10 @@ router.get('/profile', authenticateUser, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     res.json({
+      _id: user._id,
       username: user.username,
       email: user.email,
+      avatar: user.avatar || '',
       favoriteCountries: user.favoriteCountries || [],
       createdAt: user.createdAt // Include the createdAt field
     });
@@ -161,10 +164,12 @@ router.put('/profile', authenticateUser, upload.single('avatar'), async (req, re
 // Get current user
 router.get('/me', authenticateUser, (req, res) => {
   res.json({
+    _id: req.user._id,
     id: req.user._id,
     username: req.user.username,
     email: req.user.email,
     role: req.user.role,
+    avatar: req.user.avatar || '',
     favoriteCountries: req.user.favoriteCountries || []
   });
 });

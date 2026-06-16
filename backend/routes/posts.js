@@ -34,7 +34,7 @@ const upload = multer({ storage: storage });
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('user', 'username') // Populate user data, selecting only the username field
+      .populate('user', 'username avatar') // Include avatar so post list can show profile images
       .populate('country', 'name')
       .sort({ createdAt: -1 }); // Sort by creation date, newest first
     res.json(posts);
@@ -70,9 +70,9 @@ router.post('/', authenticateUser, upload.array('images', 5), async (req, res) =
 router.get('/:id', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('user', 'username')
+      .populate('user', 'username avatar')
       .populate('country', 'name')
-      .populate('comments.user', 'username');
+      .populate('comments.user', 'username avatar');
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -134,9 +134,9 @@ router.post('/:id/comments', authenticateUser, async (req, res) => {
     
     // Fetch the updated post with populated fields to return
     const updatedPost = await Post.findById(req.params.id)
-      .populate('user', 'username')
+      .populate('user', 'username avatar')
       .populate('country', 'name')
-      .populate('comments.user', 'username');
+      .populate('comments.user', 'username avatar');
       
     res.status(201).json(updatedPost);
   } catch (error) {

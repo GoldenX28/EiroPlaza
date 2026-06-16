@@ -7,7 +7,7 @@
           <div class="flex items-start gap-5">
             <div>
               <div v-if="user.avatar" class="profile-avatar-img h-20 w-20 shrink-0 overflow-hidden rounded-3xl bg-slate-100">
-                <img :src="user.avatar" alt="avatar" class="h-full w-full object-cover">
+                <img :src="getImageUrl(user.avatar)" alt="avatar" class="h-full w-full object-cover">
               </div>
               <div v-else class="profile-avatar flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br from-sky-400 via-indigo-500 to-violet-600 text-2xl font-black text-white shadow-xl shadow-sky-500/30">
                 {{ userInitials }}
@@ -269,6 +269,15 @@ export default {
       }
     };
 
+    const getImageUrl = (avatar) => {
+      const value = String(avatar || '').trim();
+      if (!value) return '';
+      if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/uploads/')) {
+        return value;
+      }
+      return `/uploads/${value.replace(/^\/+/, '')}`;
+    };
+
     const userInitials = ref('UP');
     const favoriteCountriesCount = ref(0);
     const favoriteCountLabel = ref('0 favorīti');
@@ -311,6 +320,7 @@ export default {
       onAvatarSelected,
       formatDate,
       calculateAccountAge,
+      getImageUrl,
       userInitials,
       favoriteCountriesCount,
       favoriteCountLabel,

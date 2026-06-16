@@ -1,0 +1,16 @@
+[Unit]
+Description=EiroPlaza Backend API
+After=network.target
+
+[Service]
+Type=simple
+# Change this user to the account that owns the project files on your server.
+User=root
+WorkingDirectory=/root/EiroPlaza/backend
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

@@ -206,9 +206,12 @@ export default {
     };
 
     const getImageUrl = (imagePath) => {
-      if (!imagePath) return '';
-      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
-      return `/uploads${imagePath}`;
+      const value = String(imagePath || '').trim();
+      if (!value) return '';
+      if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/uploads/')) {
+        return value;
+      }
+      return `/uploads/${value.replace(/^\/+/, '')}`;
     };
 
     onMounted(fetchPost);

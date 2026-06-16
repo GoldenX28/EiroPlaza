@@ -70,11 +70,25 @@ export default {
       }
 
       try {
-        await axios.post('/api/auth/register', {
+        const response = await axios.post('/api/auth/register', {
           username: this.username,
           email: this.email,
           password: this.password
         });
+
+        if (response.data?.token) {
+          localStorage.setItem('token', response.data.token);
+          this.$store.dispatch('login', response.data.user || {
+            username: this.username,
+            email: this.email,
+            role: 'user',
+            avatar: '',
+            favoriteCountries: []
+          });
+          this.$router.push('/');
+          return;
+        }
+
         this.$router.push('/login');
       } catch (error) {
         if (error.response) {

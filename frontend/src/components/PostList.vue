@@ -15,60 +15,62 @@
         </div>
       </header>
 
-      <section class="mb-6 grid gap-4 sm:grid-cols-3">
-        <div class="sm:col-span-2 flex items-center gap-3">
-          <input v-model.trim="searchQuery" type="search" placeholder="Meklēt pēc nosaukuma vai satura..." class="w-full rounded-xl border border-slate-200 px-4 py-2 shadow-sm" />
-          <select v-model="selectedCountry" class="rounded-xl border border-slate-200 px-3 py-2 shadow-sm">
-            <option value="">Visas valstis</option>
-            <option v-for="c in countries" :key="c._id" :value="c._id">{{ getCountryDisplayName(c) }}</option>
-          </select>
-        </div>
-        <div class="flex items-center justify-end gap-3">
-          <div class="text-sm text-slate-600">Rāda {{ rangeText }}</div>
-        </div>
-      </section>
-
       <CreatePost 
         v-if="showCreatePostForm" 
         @cancel="showCreatePostForm = false" 
         @post-created="handlePostCreated"
       />
 
-      <section class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <article v-for="post in paginatedPosts" :key="post._id" class="post-card rounded-2xl bg-white p-5 shadow-lg">
-          <div class="flex items-start gap-4">
-            <div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-xl font-semibold text-slate-700">
-              <img
-                v-if="post.user?.avatar"
-                :src="getImageUrl(post.user.avatar)"
-                alt="autora profils"
-                class="h-full w-full object-cover"
-              >
-              <span v-else>{{ getInitials(post.user?.username || post.title) }}</span>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-lg font-bold text-slate-900">{{ post.title }}</h3>
-              <p class="text-xs text-slate-500">Autors: {{ post.user?.username || 'Nezināms' }} • {{ getCountryDisplayName(post.country) }}</p>
-            </div>
-            <div class="text-sm text-yellow-500 font-semibold">{{ post.rating }}★</div>
+      <template v-else>
+        <section class="mb-6 grid gap-4 sm:grid-cols-3">
+          <div class="sm:col-span-2 flex items-center gap-3">
+            <input v-model.trim="searchQuery" type="search" placeholder="Meklēt pēc nosaukuma vai satura..." class="w-full rounded-xl border border-slate-200 px-4 py-2 shadow-sm" />
+            <select v-model="selectedCountry" class="rounded-xl border border-slate-200 px-3 py-2 shadow-sm">
+              <option value="">Visas valstis</option>
+              <option v-for="c in countries" :key="c._id" :value="c._id">{{ getCountryDisplayName(c) }}</option>
+            </select>
           </div>
-
-          <p class="mt-3 text-sm text-slate-700">{{ post.content.length > 160 ? post.content.substring(0,160) + '...' : post.content }}</p>
-
-          <div class="mt-4 flex items-center justify-between">
-            <router-link :to="{ name: 'PostDetail', params: { id: post._id } }" class="text-indigo-600 font-semibold hover:underline">Lasīt vairāk</router-link>
-            <div class="text-xs text-slate-500">{{ formatDate(post.createdAt) }}</div>
+          <div class="flex items-center justify-end gap-3">
+            <div class="text-sm text-slate-600">Rāda {{ rangeText }}</div>
           </div>
-        </article>
-      </section>
+        </section>
 
-      <div class="mt-8 flex items-center justify-center gap-3">
-        <button class="px-3 py-1 rounded-md border" :disabled="currentPage===1" @click="goToPage(currentPage-1)">Iepriekšējā</button>
-        <div class="flex items-center gap-2">
-          <button v-for="p in pageButtons" :key="p" @click="goToPage(p)" :class="{'bg-indigo-600 text-white': p===currentPage, 'px-3 py-1 rounded-md': true}">{{ p }}</button>
+        <section class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article v-for="post in paginatedPosts" :key="post._id" class="post-card rounded-2xl bg-white p-5 shadow-lg">
+            <div class="flex items-start gap-4">
+              <div class="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-xl font-semibold text-slate-700">
+                <img
+                  v-if="post.user?.avatar"
+                  :src="getImageUrl(post.user.avatar)"
+                  alt="autora profils"
+                  class="h-full w-full object-cover"
+                >
+                <span v-else>{{ getInitials(post.user?.username || post.title) }}</span>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-slate-900">{{ post.title }}</h3>
+                <p class="text-xs text-slate-500">Autors: {{ post.user?.username || 'Nezināms' }} • {{ getCountryDisplayName(post.country) }}</p>
+              </div>
+              <div class="text-sm text-yellow-500 font-semibold">{{ post.rating }}★</div>
+            </div>
+
+            <p class="mt-3 text-sm text-slate-700">{{ post.content.length > 160 ? post.content.substring(0,160) + '...' : post.content }}</p>
+
+            <div class="mt-4 flex items-center justify-between">
+              <router-link :to="{ name: 'PostDetail', params: { id: post._id } }" class="text-indigo-600 font-semibold hover:underline">Lasīt vairāk</router-link>
+              <div class="text-xs text-slate-500">{{ formatDate(post.createdAt) }}</div>
+            </div>
+          </article>
+        </section>
+
+        <div class="mt-8 flex items-center justify-center gap-3">
+          <button class="px-3 py-1 rounded-md border" :disabled="currentPage===1" @click="goToPage(currentPage-1)">Iepriekšējā</button>
+          <div class="flex items-center gap-2">
+            <button v-for="p in pageButtons" :key="p" @click="goToPage(p)" :class="{'bg-indigo-600 text-white': p===currentPage, 'px-3 py-1 rounded-md': true}">{{ p }}</button>
+          </div>
+          <button class="px-3 py-1 rounded-md border" :disabled="currentPage===totalPages" @click="goToPage(currentPage+1)">Nākamā</button>
         </div>
-        <button class="px-3 py-1 rounded-md border" :disabled="currentPage===totalPages" @click="goToPage(currentPage+1)">Nākamā</button>
-      </div>
+      </template>
     </div>
   </div>
 </template>

@@ -75,7 +75,10 @@
                 <tr v-for="user in paginatedUsers" :key="user._id">
                   <td>
                     <div class="user-cell">
-                      <div class="user-avatar">{{ getInitials(user.username) }}</div>
+                        <div class="user-avatar rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-white font-bold">
+                          <img v-if="user.avatar" :src="getImageUrl(user.avatar)" alt="avatar" class="w-10 h-10 object-cover">
+                          <span v-else class="text-slate-700">{{ getInitials(user.username) }}</span>
+                        </div>
                       <div>
                         <p class="font-semibold text-slate-900">{{ user.username }}</p>
                         <p class="text-xs text-slate-500">{{ user.role === 'admin' ? 'Administrators' : 'Lietotājs' }}</p>
@@ -450,6 +453,13 @@ export default {
       ).toUpperCase();
     };
 
+    const getImageUrl = (value) => {
+      const avatar = String(value || '').trim();
+      if (!avatar) return '';
+      if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('/uploads/')) return avatar;
+      return `/uploads/${avatar.replace(/^\/+/, '')}`;
+    };
+
     onMounted(() => {
       fetchUsers();
     });
@@ -480,6 +490,7 @@ export default {
       paginatedUsers,
       pageButtons,
       goToPage
+      ,getImageUrl
     };
   }
 };

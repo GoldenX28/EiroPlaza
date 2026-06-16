@@ -52,7 +52,23 @@ router.post('/register', async (req, res) => {
 
     await user.save();
     console.log('User registered successfully');
-    res.status(201).json({ message: 'User registered successfully' });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar || '',
+        favoriteCountries: user.favoriteCountries || []
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error during registration', error: error.message });

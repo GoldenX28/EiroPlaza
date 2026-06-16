@@ -115,7 +115,7 @@ export default {
 
     const fetchCountries = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/countries');
+        const response = await axios.get('/api/countries');
         countries.value = response.data;
       } catch (error) {
         console.error('Kļūda, ielādējot valstis:', error);
@@ -151,7 +151,7 @@ export default {
       });
 
       try {
-        const response = await axios.post('http://localhost:3000/api/posts', formData, {
+        const response = await axios.post('/api/posts', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

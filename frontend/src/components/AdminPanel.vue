@@ -330,7 +330,7 @@ export default {
       try {
         loading.value = true;
         error.value = null;
-        const response = await axios.get('http://localhost:3000/api/admin/users', {
+        const response = await axios.get('/api/admin/users', {
           headers: getAuthHeaders()
         });
         users.value = response.data;
@@ -345,7 +345,7 @@ export default {
     const updateUser = async (user) => {
       try {
         await axios.put(
-          `http://localhost:3000/api/admin/users/${user._id}`,
+          `/api/admin/users/${user._id}`,
           { role: user.role },
           { headers: getAuthHeaders() }
         );
@@ -374,7 +374,7 @@ export default {
       }
       try {
         await axios.put(
-          `http://localhost:3000/api/admin/users/${editingUser.value._id}`,
+          `/api/admin/users/${editingUser.value._id}`,
           editingUser.value,
           { headers: getAuthHeaders() }
         );
@@ -397,7 +397,7 @@ export default {
       }
       if (confirm('Vai tiešām vēlies dzēst šo lietotāju?')) {
         try {
-          await axios.delete(`http://localhost:3000/api/admin/users/${userId}`, {
+          await axios.delete(`/api/admin/users/${userId}`, {
             headers: getAuthHeaders()
           });
           users.value = users.value.filter(user => user._id !== userId);
@@ -413,7 +413,7 @@ export default {
       try {
         loadingInquiries.value = true;
         inquiriesError.value = null;
-        const response = await axios.get('http://localhost:3000/api/inquiries', {
+        const response = await axios.get('/api/inquiries', {
           headers: getAuthHeaders()
         });
         inquiries.value = response.data.map(inquiry => ({

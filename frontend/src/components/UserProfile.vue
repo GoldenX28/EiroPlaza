@@ -180,7 +180,7 @@ export default {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/api/auth/profile', {
+        const response = await axios.get('/api/auth/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
         user.value = response.data;
@@ -216,7 +216,7 @@ export default {
           formData.append('avatar', avatarFile.value);
         }
 
-        const response = await axios.put('http://localhost:3000/api/auth/profile', formData, {
+        const response = await axios.put('/api/auth/profile', formData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
         });
         user.value = { ...user.value, ...editedUser.value, ...(response.data?.user || {}) };
@@ -308,6 +308,7 @@ export default {
       toggleEdit,
       cancelEdit,
       updateProfile,
+      onAvatarSelected,
       formatDate,
       calculateAccountAge,
       userInitials,

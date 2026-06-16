@@ -226,7 +226,7 @@ export default {
   },
   async created() {
     try {
-      const response = await axios.get('http://localhost:3000/api/countries');
+      const response = await axios.get('/api/countries');
       this.countries = response.data;
     } catch (error) {
       console.error('Kļūda, ielādējot valstis:', error);
@@ -270,7 +270,7 @@ export default {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post(`http://localhost:3000/api/auth/favorites/${country._id}`, {}, {
+        const response = await axios.post(`/api/auth/favorites/${country._id}`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

@@ -339,7 +339,7 @@ export default {
       }
 
       try {
-        const response = await axios.get('http://localhost:3000/api/news', {
+        const response = await axios.get('/api/news', {
           params: {
             query,
             size: 6
@@ -360,7 +360,7 @@ export default {
       error.value = null;
 
       try {
-        const response = await axios.get(`http://localhost:3000/api/countries/${id}`);
+        const response = await axios.get(`/api/countries/${id}`);
         country.value = response.data;
 
         await Promise.allSettled([
@@ -425,7 +425,7 @@ export default {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post(`http://localhost:3000/api/auth/favorites/${country.value._id}`, {}, {
+        const response = await axios.post(`/api/auth/favorites/${country.value._id}`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

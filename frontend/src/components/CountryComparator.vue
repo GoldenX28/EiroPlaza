@@ -226,7 +226,7 @@ export default {
       error.value = '';
 
       try {
-        const response = await axios.get('http://localhost:3000/api/countries');
+        const response = await axios.get('/api/countries');
         countries.value = Array.isArray(response.data) ? response.data : [];
       } catch (fetchError) {
         error.value = 'Neizdevās ielādēt valstis salīdzināšanai.';

@@ -138,7 +138,7 @@ export default {
 
     const fetchPosts = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/posts');
+        const response = await axios.get('/api/posts');
         posts.value = response.data;
         // preload countries from posts if present
         const countrySet = new Map();

@@ -151,7 +151,7 @@ export default {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        await axios.post('http://localhost:3000/api/inquiries', { message }, { headers });
+        await axios.post('/api/inquiries', { message }, { headers });
 
         this.inquiry = '';
         this.submitState = {

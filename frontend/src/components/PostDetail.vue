@@ -133,7 +133,7 @@ export default {
 
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/posts/${route.params.id}`);
+        const response = await axios.get(`/api/posts/${route.params.id}`);
         post.value = response.data;
         selectedImage.value = response.data?.images?.[0] || '';
       } catch (error) {
@@ -146,7 +146,7 @@ export default {
       try {
         isSubmitting.value = true;
         const token = localStorage.getItem('token');
-        const response = await axios.post(`http://localhost:3000/api/posts/${route.params.id}/comments`, {
+        const response = await axios.post(`/api/posts/${route.params.id}/comments`, {
           content: newComment.value
         }, {
           headers: { Authorization: `Bearer ${token}` }
@@ -164,7 +164,7 @@ export default {
       if (confirm('Vai tiešām vēlies dzēst šo ierakstu?')) {
         try {
           const token = localStorage.getItem('token');
-          await axios.delete(`http://localhost:3000/api/posts/${route.params.id}`, {
+          await axios.delete(`/api/posts/${route.params.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           router.push('/posts');
@@ -208,7 +208,7 @@ export default {
     const getImageUrl = (imagePath) => {
       if (!imagePath) return '';
       if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
-      return `http://localhost:3000${imagePath}`;
+      return `/uploads${imagePath}`;
     };
 
     onMounted(fetchPost);

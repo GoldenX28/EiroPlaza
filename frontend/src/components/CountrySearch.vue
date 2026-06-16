@@ -49,7 +49,7 @@ export default {
 
       loading.value = true;
       try {
-        const response = await axios.get(`http://localhost:3000/api/countries/search?query=${searchQuery.value}`);
+        const response = await axios.get(`/api/countries/search?query=${searchQuery.value}`);
         searchResults.value = response.data;
       } catch (error) {
         console.error('Kļūda, meklējot valstis:', error);

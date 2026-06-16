@@ -39,7 +39,7 @@ export default createStore({
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await axios.get('http://localhost:3000/api/auth/me', {
+          const response = await axios.get('/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
           commit('SET_LOGGED_IN', true);

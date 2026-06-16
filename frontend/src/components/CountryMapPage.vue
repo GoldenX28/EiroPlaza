@@ -96,7 +96,7 @@ export default {
       loading.value = true;
       error.value = null;
       try {
-        const response = await axios.get(`http://localhost:3000/api/countries/${id}`);
+        const response = await axios.get(`/api/countries/${id}`);
         country.value = response.data;
       } catch (err) {
         error.value = 'Neizdevās ielādēt kartes datus';

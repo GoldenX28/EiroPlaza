@@ -42,7 +42,7 @@ export default {
       dbStatus.value = null;
 
       try {
-        const response = await axios.get('http://localhost:3000/api/db-health');
+        const response = await axios.get('/api/db-health');
         console.log('Datubāzes pārbaudes atbilde:', response.data);
         dbStatus.value = response.data;
       } catch (err) {
